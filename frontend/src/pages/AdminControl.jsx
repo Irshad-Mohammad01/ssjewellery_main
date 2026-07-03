@@ -7,7 +7,7 @@ import {
   AlertTriangle, Check, RefreshCw, Calendar, DollarSign, Clock, MapPin, Lock, Unlock, Shield, Search, Image,
   Settings, Globe, Link as LinkIcon
 } from 'lucide-react';
-import { AuthContext, API_BASE_URL, SERVER_BASE_URL } from '../context/AuthContext';
+import { AuthContext, API_BASE_URL } from '../context/AuthContext';
 
 const ACTION_TYPES = [
   "Product Added",
@@ -1543,7 +1543,7 @@ export const AdminControl = () => {
       
       let finalUrl = res.data.url;
       if (finalUrl.startsWith('/static/')) {
-        finalUrl = `${SERVER_BASE_URL}${finalUrl}`;
+        finalUrl = `http://localhost:5000${finalUrl}`;
       }
 
       if (mode === 'create') {
@@ -2384,7 +2384,7 @@ export const AdminControl = () => {
                           <h4 className="text-sm font-bold text-slate-800 dark:text-slate-200 mb-4 self-start">{chart.title}</h4>
                           <div className="w-full bg-slate-50 dark:bg-slate-955/60 border border-slate-105 dark:border-slate-850 p-2.5 rounded-2xl flex justify-center items-center">
                             <img 
-                              src={`${SERVER_BASE_URL}${chart.img}`} 
+                              src={`http://localhost:5000${chart.img}`} 
                               alt={chart.title}
                               className="max-h-[220px] w-auto object-contain rounded-lg"
                             />
@@ -4098,7 +4098,7 @@ export const AdminControl = () => {
                 <div className="bg-slate-50 dark:bg-slate-950 border border-slate-100 dark:border-slate-850 p-4 rounded-3xl flex flex-col justify-center items-center">
                   <span className="text-xs font-bold text-slate-500 mb-2">Live Matplotlib Chart Report</span>
                   <img 
-                    src={`${SERVER_BASE_URL}${productAnalyticsData.chart_url}`} 
+                    src={`http://localhost:5000${productAnalyticsData.chart_url}`} 
                     alt="Sales Trend Chart" 
                     className="max-h-[280px] w-auto object-contain rounded-xl"
                   />
