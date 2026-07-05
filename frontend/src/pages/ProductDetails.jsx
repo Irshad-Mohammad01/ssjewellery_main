@@ -1195,7 +1195,7 @@ export const ProductDetails = ({ productId }) => {
       </div>
     );
   };  return (
-    <div className={productId ? "bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 font-sans" : "bg-slate-55 dark:bg-slate-950 text-slate-800 dark:text-slate-100 min-h-screen pt-24 lg:pt-0 pb-6 font-sans"}>
+    <div className={productId ? "bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 font-sans" : "bg-slate-55 dark:bg-slate-950 text-slate-800 dark:text-slate-100 min-h-screen pb-6 font-sans"}>
       
       {/* Sticky Header Bar */}
       {!productId && (
@@ -1273,14 +1273,14 @@ export const ProductDetails = ({ productId }) => {
                  
                  {/* Product Image Gallery & Media */}
                  <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-sm flex flex-col relative overflow-hidden group">
-                   <div className="absolute top-4 left-4 z-10">
-                     <span className={`px-2 py-1 rounded bg-white/90 backdrop-blur shadow text-[10px] font-black uppercase border ${product.stock > 0 ? 'text-emerald-600 border-emerald-100' : 'text-rose-600 border-rose-100'}`}>
-                       {product.stock > 0 ? 'In Stock' : 'Out of Stock'}
-                     </span>
-                   </div>
-                   <div className="w-full relative bg-slate-50 dark:bg-slate-950 rounded-xl overflow-hidden mb-4 border border-slate-100 dark:border-slate-800">
-                     <ProductImageGallery images={imagesList} productName={product.name} />
-                   </div>
+                    <div className="w-full relative bg-slate-50 dark:bg-slate-950 rounded-xl overflow-hidden mb-4 border border-slate-100 dark:border-slate-800">
+                      <div className="absolute top-4 left-4 z-10">
+                        <span className={`px-2 py-1 rounded bg-white/90 backdrop-blur shadow text-[10px] font-black uppercase border ${product.stock > 0 ? 'text-emerald-600 border-emerald-100' : 'text-rose-600 border-rose-100'}`}>
+                          {product.stock > 0 ? 'In Stock' : 'Out of Stock'}
+                        </span>
+                      </div>
+                      <ProductImageGallery images={imagesList} productName={product.name} />
+                    </div>
                    <div className="flex items-center justify-between border-t border-slate-100 dark:border-slate-800 pt-4">
                      <div className="text-xs text-slate-500 font-medium">Images ({imagesList.length})</div>
                      <button className="px-3 py-1.5 text-[10px] font-bold text-emerald-600 bg-emerald-50 hover:bg-emerald-100 rounded-lg transition-colors border border-emerald-100 cursor-pointer">
