@@ -648,6 +648,15 @@ export const Navbar = () => {
                               </Link>
 
                               <Link
+                                to="/orders"
+                                onClick={() => setProfileDropdownOpen(false)}
+                                className="flex items-center space-x-2 px-4 py-2.5 text-sm text-[#1F1F1F] dark:text-white hover:bg-slate-55 dark:hover:bg-[rgba(212,167,95,0.12)] dark:hover:text-[#D4A75F] transition-all duration-200"
+                              >
+                                <ClipboardList className="h-4 w-4 opacity-75 text-[#3F1D5A] dark:text-[#D4A75F]" />
+                                <span>{language === 'hi' ? 'मेरे ऑर्डर' : 'My Orders'}</span>
+                              </Link>
+
+                              <Link
                                 to="/profile"
                                 onClick={() => setProfileDropdownOpen(false)}
                                 className="flex items-center space-x-2 px-4 py-2.5 text-sm text-[#1F1F1F] dark:text-white hover:bg-slate-55 dark:hover:bg-[rgba(212,167,95,0.12)] dark:hover:text-[#D4A75F] transition-all duration-200"
@@ -1133,6 +1142,15 @@ export const Navbar = () => {
                                 >
                                   <User className="h-4 w-4 opacity-75 text-[#3F1D5A] dark:text-[#D4A75F]" />
                                   <span>{language === 'hi' ? 'मेरी प्रोफ़ाइल' : 'My Profile'}</span>
+                                </Link>
+
+                                <Link
+                                  to="/orders"
+                                  onClick={() => setProfileDropdownOpen(false)}
+                                  className="flex items-center space-x-2 px-4 py-2.5 text-sm text-[#1F1F1F] dark:text-white hover:bg-slate-55 dark:hover:bg-[rgba(212,167,95,0.12)] dark:hover:text-[#D4A75F] transition-all duration-200"
+                                >
+                                  <ClipboardList className="h-4 w-4 opacity-75 text-[#3F1D5A] dark:text-[#D4A75F]" />
+                                  <span>{language === 'hi' ? 'मेरे ऑर्डर' : 'My Orders'}</span>
                                 </Link>
 
                                 <Link
