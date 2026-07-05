@@ -201,6 +201,16 @@ class ProductModel(db.Model):
         desc_trans["hi"] = description_hi
 
         images_input = data.get("images", [])
+        if not isinstance(images_input, list):
+            images_input = []
+        if len(images_input) == 0:
+            images_input = [
+                "https://images.unsplash.com/photo-1605100804763-247f67b3557e?w=600&auto=format&fit=crop&q=80",
+                "https://images.unsplash.com/photo-1603561591411-07134e71a2a9?w=600&auto=format&fit=crop&q=80"
+            ]
+        elif len(images_input) == 1:
+            images_input = [images_input[0], images_input[0]]
+
         admin_name = data.get("created_by") or data.get("admin_name") or "admin"
 
         product = ProductModel(
@@ -420,14 +430,25 @@ class ProductModel(db.Model):
                 product.show_on_homepage = bool(data["show_on_homepage"])
             
             if "images" in data:
+                img_list = data["images"] or []
+                if not isinstance(img_list, list):
+                    img_list = []
+                if len(img_list) == 0:
+                    img_list = [
+                        "https://images.unsplash.com/photo-1605100804763-247f67b3557e?w=600&auto=format&fit=crop&q=80",
+                        "https://images.unsplash.com/photo-1603561591411-07134e71a2a9?w=600&auto=format&fit=crop&q=80"
+                    ]
+                elif len(img_list) == 1:
+                    img_list = [img_list[0], img_list[0]]
+
                 old_images = ",".join(product.images or [])
-                new_images = ",".join(data["images"] or [])
+                new_images = ",".join(img_list)
                 log_change("Image Change", "images", old_images, new_images)
-                product.images = data["images"]
+                product.images = img_list
                 # Delete existing product images
                 ProductImageModel.query.filter_by(product_id=product.id).delete()
                 # Insert updated images
-                for order, img_url in enumerate(data["images"]):
+                for order, img_url in enumerate(img_list):
                     p_img = ProductImageModel(
                         product_id=product.id,
                         image_url=img_url,
