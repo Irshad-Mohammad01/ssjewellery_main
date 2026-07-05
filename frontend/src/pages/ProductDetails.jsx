@@ -2200,51 +2200,6 @@ export const ProductDetails = ({ productId }) => {
                   </div>
                 </div>
 
-                {/* 2. Premium Jewellery Trust Items */}
-                <div className="pt-3 space-y-3">
-                  <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider block">
-                    {language === 'hi' ? 'एसएसज्वेलरी वादे' : 'SSJewellery Commitments'}
-                  </span>
-                  
-                  {/* Certified Purity */}
-                  <div className="flex items-start gap-2.5 text-slate-700 dark:text-slate-350">
-                    <ShieldCheck className="h-4.5 w-4.5 text-green-500 shrink-0 mt-0.5" />
-                    <div>
-                      <p className="font-bold text-slate-800 dark:text-slate-200">
-                        {language === 'hi' ? '100% प्रमाणित पवित्रता' : '100% Certified & Hallmarked'}
-                      </p>
-                      <p className="text-[10px] text-slate-500 dark:text-slate-400">
-                        {language === 'hi' ? 'प्रत्येक आभूषण IGI/GIA द्वारा प्रमाणित और BIS हॉलमार्क युक्त है।' : 'Every piece is BIS Hallmarked and certified by top labs like GIA/IGI.'}
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Free Insured Shipping */}
-                  <div className="flex items-start gap-2.5 text-slate-700 dark:text-slate-350">
-                    <Truck className="h-4.5 w-4.5 text-green-500 shrink-0 mt-0.5" />
-                    <div>
-                      <p className="font-bold text-slate-800 dark:text-slate-200">
-                        {language === 'hi' ? 'मुफ़्त बीमित शिपिंग' : 'Free Insured Shipping'}
-                      </p>
-                      <p className="text-[10px] text-slate-500 dark:text-slate-400">
-                        {language === 'hi' ? 'सुरक्षित, बीमित डिलीवरी आपके घर तक बिना किसी शुल्क के।' : 'Safe, fully-insured delivery straight to your doorstep at zero cost.'}
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Lifetime Exchange & Buyback */}
-                  <div className="flex items-start gap-2.5 text-slate-700 dark:text-slate-350">
-                    <RotateCcw className="h-4.5 w-4.5 text-green-500 shrink-0 mt-0.5" />
-                    <div>
-                      <p className="font-bold text-slate-800 dark:text-slate-200">
-                        {language === 'hi' ? 'लाइफटाइम एक्सचेंज और बायबैक' : 'Lifetime Buyback & Exchange'}
-                      </p>
-                      <p className="text-[10px] text-slate-500 dark:text-slate-400">
-                        {language === 'hi' ? 'सभी आभूषणों पर आसान जीवनभर का एक्सचेंज और बायबैक पॉलिसी।' : 'Easy lifetime exchange and buyback policy on all our jewellery pieces.'}
-                      </p>
-                    </div>
-                  </div>
-                </div>
 
               </div>
             </div>
