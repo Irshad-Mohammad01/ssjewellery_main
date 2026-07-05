@@ -562,6 +562,43 @@ export const ProductDetails = ({ productId }) => {
     }).filter(item => item.key);
   };
 
+  // Detect jewellery metal type and karats from product data
+  const getJewelleryAttributes = () => {
+    if (!product) return {};
+    const searchText = `${product.name || ''} ${product.description || ''} ${product.category || ''}`.toLowerCase();
+    const variantKeys = Object.keys(getGroupedVariants()).join(' ').toLowerCase();
+    const variantVals = Object.values(getGroupedVariants()).flat().join(' ').toLowerCase();
+    const allText = `${searchText} ${variantKeys} ${variantVals}`;
+
+    // Detect Metal
+    let metal = null;
+    if (/platinum/i.test(allText)) metal = language === 'hi' ? 'प्लेटिनम' : 'Platinum';
+    else if (/gold|सोना|गोल्ड/i.test(allText)) metal = language === 'hi' ? 'शुद्ध सोना (Gold)' : 'Gold';
+    else if (/silver|चाँदी|चांदी|सिल्वर/i.test(allText)) metal = language === 'hi' ? 'चाँदी (Silver)' : 'Silver';
+
+    // Detect Karats / Purity from name/description
+    let karats = null;
+    const karatMatch = allText.match(/\b(24\s*k(?:t|arat)?|22\s*k(?:t|arat)?|18\s*k(?:t|arat)?|14\s*k(?:t|arat)?|10\s*k(?:t|arat)?|916|750|585|999|925|sterling)\b/i);
+    if (karatMatch) {
+      const k = karatMatch[1].replace(/\s/g, '').toUpperCase();
+      const karatMap = {
+        '24K': '24K (999 - 99.9% Pure)', '24KT': '24K (999 - 99.9% Pure)', '24KARAT': '24K (999 - 99.9% Pure)', '999': '24K (999 - 99.9% Pure)',
+        '22K': '22K (916 - 91.6% Pure)', '22KT': '22K (916 - 91.6% Pure)', '22KARAT': '22K (916 - 91.6% Pure)', '916': '22K (916 - 91.6% Pure)',
+        '18K': '18K (750 - 75% Pure)',   '18KT': '18K (750 - 75% Pure)',   '18KARAT': '18K (750 - 75% Pure)',   '750': '18K (750 - 75% Pure)',
+        '14K': '14K (585 - 58.5% Pure)', '14KT': '14K (585 - 58.5% Pure)', '14KARAT': '14K (585 - 58.5% Pure)', '585': '14K (585 - 58.5% Pure)',
+        '10K': '10K (417 - 41.7% Pure)', '925': '925 Sterling Silver',      'STERLING': '925 Sterling Silver',
+      };
+      karats = karatMap[k] || k;
+    } else if (metal === 'Gold' || metal?.includes('सोना')) {
+      karats = language === 'hi' ? '22K (916) - 91.6% शुद्ध' : '22K (916 - 91.6% Pure)';
+    } else if (metal === 'Silver' || metal?.includes('चाँदी')) {
+      karats = language === 'hi' ? '925 स्टर्लिंग सिल्वर' : '925 Sterling Silver';
+    }
+
+    return { metal, karats };
+  };
+
+
   const fetchProductDetails = async () => {
     try {
       const response = await axios.get(`${API_BASE_URL}/products/${id}`);
@@ -2179,18 +2216,21 @@ export const ProductDetails = ({ productId }) => {
                           </div>
                         ))
                       : /* Fallback: show variant attributes + category as key-value */
-                        [
-                          product.category && { key: language === 'hi' ? 'श्रेणी' : 'Category', value: translateCategory(product.category) },
-                          product.brand   && { key: language === 'hi' ? 'ब्रांड' : 'Brand',    value: product.brand },
-                          ...Object.entries(getGroupedVariants()).map(([attr, vals]) => ({
-                            key: attr,
-                            value: vals.join(', ')
-                          })),
-                          { key: language === 'hi' ? 'उपलब्धता' : 'Availability', value: product.stock > 0 ? (language === 'hi' ? `${product.stock} स्टॉक में` : `${product.stock} in Stock`) : (language === 'hi' ? 'स्टॉक खत्म' : 'Out of Stock') },
-                          { key: language === 'hi' ? 'प्रमाणन' : 'Certification', value: 'BIS Hallmarked' },
-                          { key: language === 'hi' ? 'पत्थर' : 'Stone Type', value: language === 'hi' ? 'प्रमाणित रत्न' : 'Certified Gemstone' },
-                          { key: language === 'hi' ? 'धातु' : 'Metal', value: language === 'hi' ? 'शुद्ध सोना / चांदी' : 'Pure Gold / Silver' },
-                        ].filter(Boolean).map((item, idx) => (
+                        (() => {
+                          const { metal, karats } = getJewelleryAttributes();
+                          return [
+                            product.category && { key: language === 'hi' ? 'श्रेणी' : 'Category', value: translateCategory(product.category) },
+                            product.brand    && { key: language === 'hi' ? 'ब्रांड' : 'Brand',    value: product.brand },
+                            ...Object.entries(getGroupedVariants()).map(([attr, vals]) => ({
+                              key: attr,
+                              value: vals.join(', ')
+                            })),
+                            metal   && { key: language === 'hi' ? 'धातु' : 'Metal',   value: metal },
+                            karats  && { key: language === 'hi' ? 'शुद्धता / कैरेट' : 'Purity / Karats', value: karats },
+                            { key: language === 'hi' ? 'उपलब्धता' : 'Availability', value: product.stock > 0 ? (language === 'hi' ? `${product.stock} स्टॉक में` : `${product.stock} in Stock`) : (language === 'hi' ? 'स्टॉक खत्म' : 'Out of Stock') },
+                            { key: language === 'hi' ? 'प्रमाणन' : 'Certification', value: 'BIS Hallmarked' },
+                          ].filter(Boolean);
+                        })().map((item, idx) => (
                           <div key={idx} className="flex justify-between items-center py-1.5 border-b border-slate-100 dark:border-slate-800/60 last:border-0">
                             <span className="text-slate-400 dark:text-slate-500 font-semibold capitalize">{item.key}</span>
                             <span className="font-bold text-[#D4A75F] text-right">{item.value}</span>
