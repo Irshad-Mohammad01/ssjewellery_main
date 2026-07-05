@@ -239,6 +239,8 @@ export const ProductDetails = ({ productId }) => {
   // Preview modal state
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [previewImageIndex, setPreviewImageIndex] = useState(0);
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 1024);
+  const [isAutoSlidePaused, setIsAutoSlidePaused] = useState(false);
 
   // Request Buy state
   const [showRequestBuyModal, setShowRequestBuyModal] = useState(false);
@@ -607,12 +609,39 @@ export const ProductDetails = ({ productId }) => {
     }
   }, [id, isAdmin, token]);
 
-  // Auto-slideshow for product images (cycles every 3 seconds)
+  // Track mobile view state reactively
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 1024);
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  // Listen to document clicks to resume auto-slideshow when user taps outside the image/thumbnails
+  useEffect(() => {
+    if (!isAutoSlidePaused) return;
+
+    const handleDocumentClick = () => {
+      setIsAutoSlidePaused(false);
+    };
+
+    const timer = setTimeout(() => {
+      document.addEventListener('click', handleDocumentClick);
+    }, 50);
+
+    return () => {
+      clearTimeout(timer);
+      document.removeEventListener('click', handleDocumentClick);
+    };
+  }, [isAutoSlidePaused]);
+
+  // Auto-slideshow for product images (cycles every 3 seconds only on mobile view)
   useEffect(() => {
     const isCustomerView = !isAdmin || isPreviewMode;
     const imgs = product?.images && product.images.length > 0 ? product.images : [];
     
-    if (!isCustomerView || imgs.length <= 1) return;
+    if (!isMobile || !isCustomerView || isAutoSlidePaused || imgs.length <= 1) return;
 
     const interval = setInterval(() => {
       const currentImg = activeImage || imgs[0];
@@ -624,7 +653,7 @@ export const ProductDetails = ({ productId }) => {
     }, 3000);
 
     return () => clearInterval(interval);
-  }, [activeImage, product, isAdmin, isPreviewMode]);
+  }, [activeImage, product, isAdmin, isPreviewMode, isMobile, isAutoSlidePaused]);
 
   useEffect(() => {
     if (product) {
@@ -1839,7 +1868,11 @@ export const ProductDetails = ({ productId }) => {
                 <div className="w-full bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl p-4 relative group z-30 flex items-center justify-center">
                   <div 
                     className="relative w-full h-[480px] flex items-center justify-center overflow-hidden rounded-xl cursor-zoom-in"
-                    onClick={() => setIsPreviewOpen(true)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setIsPreviewOpen(true);
+                      setIsAutoSlidePaused(true);
+                    }}
                     onMouseMove={handleZoomMouseMove}
                     onMouseEnter={() => setIsZooming(true)}
                     onMouseLeave={handleZoomMouseLeave}
@@ -1874,9 +1907,11 @@ export const ProductDetails = ({ productId }) => {
                       <button
                         key={idx}
                         type="button"
-                        onClick={() => {
+                        onClick={(e) => {
+                          e.stopPropagation();
                           setActiveImage(img);
                           setPreviewImageIndex(idx);
+                          setIsAutoSlidePaused(true);
                         }}
                         className={`w-16 h-16 lg:w-20 lg:h-20 rounded-xl border-2 overflow-hidden flex-shrink-0 transition-all cursor-pointer ${
                           (activeImage || imagesList[0]) === img
