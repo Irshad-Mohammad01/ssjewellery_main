@@ -1236,8 +1236,20 @@ export const Navbar = () => {
               initial={{ x: '-100%' }}
               animate={{ x: 0 }}
               exit={{ x: '-100%' }}
-              className="fixed inset-y-0 left-0 w-[300px] bg-[#0B1220] text-slate-100 z-50 shadow-2xl flex flex-col p-6 overflow-y-auto lg:hidden"
+              transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+              drag="x"
+              dragConstraints={{ left: -320, right: 0 }}
+              dragElastic={{ left: 0.2, right: 0 }}
+              dragDirectionLock
+              onDragEnd={(_, info) => {
+                if (info.offset.x < -80 || info.velocity.x < -400) {
+                  setMobileMenuOpen(false);
+                }
+              }}
+              className="fixed inset-y-0 left-0 w-[300px] bg-[#0B1220] text-slate-100 z-50 shadow-2xl flex flex-col p-6 overflow-y-auto lg:hidden select-none"
             >
+              {/* Swipe hint strip */}
+              <div className="absolute right-0 top-1/2 -translate-y-1/2 w-1 h-16 rounded-l-full bg-[rgba(212,167,95,0.35)]" />
               {/* Header */}
               <div className="flex items-center justify-between pb-5 border-b border-slate-800">
                 <div className="flex items-center gap-2 select-none">
