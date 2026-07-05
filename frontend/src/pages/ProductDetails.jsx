@@ -1988,8 +1988,7 @@ export const ProductDetails = ({ productId }) => {
                 <span className="hover:text-[#D4A75F] cursor-pointer transition-colors" onClick={() => scrollToSection('tabs-section')}>
                   {product.reviews?.length || 0} {language === 'hi' ? 'समीक्षाएं' : 'reviews'}
                 </span>
-                <span>|</span>
-                <span>{language === 'hi' ? '56 उत्तर दिए गए प्रश्न' : '56 answered questions'}</span>
+
               </div>
 
               <div className="border-t border-slate-100 dark:border-slate-800/80 my-1" />
