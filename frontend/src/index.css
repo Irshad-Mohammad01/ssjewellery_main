@@ -403,7 +403,7 @@ html:not(.dark) .border-slate-300 {
 
 /* 3D Glassmorphism Navbar capsule classes */
 .navbar-glass-3d {
-  background: #13172e !important;
+  background: #060818 !important;
   border: 1px solid rgba(255, 255, 255, 0.10) !important;
   backdrop-filter: blur(0px) !important;
   -webkit-backdrop-filter: blur(0px) !important;
@@ -412,7 +412,7 @@ html:not(.dark) .border-slate-300 {
 }
 
 .navbar-glass-3d-scrolled {
-  background: #13172e !important;
+  background: #060818 !important;
   border: 1px solid rgba(212, 167, 95, 0.30) !important;
   backdrop-filter: blur(0px) !important;
   -webkit-backdrop-filter: blur(0px) !important;
