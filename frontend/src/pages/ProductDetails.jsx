@@ -1,4 +1,5 @@
 /* eslint-disable no-unused-vars */
+// ProductDetails v2.1 - updated: stars fix, full reviewer name, jewellery attributes
 import React, { useState, useEffect, useContext } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
