@@ -267,7 +267,7 @@ const BannerSlider = React.memo(({
           </div>
         </div>
         {/* Mobile Loading Skeleton */}
-        <div className="block md:hidden w-[94vw] mx-auto mt-[24px] mb-8">
+        <div className="block md:hidden w-[94vw] mx-auto mt-[108px] mb-8">
           <MobileBannerSkeleton />
         </div>
       </>
@@ -540,7 +540,7 @@ const BannerSlider = React.memo(({
       </div>
 
       {/* Mobile view */}
-      <div className="block md:hidden w-[94vw] mx-auto mt-[24px] mb-8">
+      <div className="block md:hidden w-[94vw] mx-auto mt-[108px] mb-8">
         <div className="relative h-[390px] xs:h-[420px] sm:h-[440px] overflow-hidden rounded-[16px] shadow-[0_20px_50px_rgba(27,11,38,0.15)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.5)] border border-[#D4A75F]/15 dark:border-white/5 bg-gradient-to-tr from-[#1B0B26] via-[#3F1D5A] to-[#2E1442]">
           {isAdmin && (
             <Link
