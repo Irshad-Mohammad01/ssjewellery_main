@@ -1811,11 +1811,11 @@ export const AdminDashboard = () => {
                       ].map(chart => (
                         <div key={chart.title} className="bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800 rounded-3xl p-6 shadow-sm flex flex-col items-center">
                           <h4 className="text-sm font-bold text-slate-800 dark:text-slate-200 mb-4 self-start">{chart.title}</h4>
-                          <div className="w-full bg-slate-50 dark:bg-slate-955/60 border border-slate-105 dark:border-slate-850 p-2.5 rounded-2xl flex justify-center items-center">
+                          <div className="w-full bg-slate-50 dark:bg-slate-955/60 border border-slate-105 dark:border-slate-850 p-2 rounded-2xl flex justify-start items-center overflow-x-auto">
                             <img 
                               src={`${SERVER_BASE_URL}${chart.img}`} 
                               alt={chart.title}
-                              className="max-h-[220px] w-auto object-contain rounded-lg"
+                              className="max-h-[220px] min-w-[500px] lg:min-w-0 w-auto object-contain rounded-lg"
                             />
                           </div>
                         </div>

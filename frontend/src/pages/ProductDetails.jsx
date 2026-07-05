@@ -1195,30 +1195,30 @@ export const ProductDetails = ({ productId }) => {
       {/* Sticky Header Bar */}
       {!productId && (
         <div className="sticky top-0 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md z-[35] border-b border-slate-200/80 dark:border-slate-800/80 py-3 mb-4 w-full shadow-sm">
-          <div className="max-w-[1700px] mx-auto px-4 md:px-6 flex items-center justify-between">
+          <div className="max-w-[1700px] mx-auto px-4 md:px-6 flex flex-col md:flex-row md:items-center justify-between gap-3">
             <div className="flex flex-col space-y-0.5">
               <div className="flex items-center text-xs text-slate-500 dark:text-slate-400 font-medium mb-1">
                 <span className="cursor-pointer hover:text-emerald-500" onClick={() => navigate('/admin')}>{language === 'hi' ? 'उत्पाद' : 'Products'}</span>
                 <ChevronRight className="h-3 w-3 mx-1" />
                 <span className="text-slate-700 dark:text-slate-330 font-bold">{language === 'hi' ? 'उत्पाद विवरण' : 'Product Details'}</span>
               </div>
-              <div className="flex items-center gap-3">
+              <div className="flex flex-wrap items-center gap-2.5">
                 <h1 className="text-lg md:text-xl font-black text-slate-800 dark:text-slate-100 leading-tight">
                   {language === 'hi' ? (product.name_hi || product.name) : (product.name_en || product.name)}
                 </h1>
-                <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${product.stock > 0 ? 'bg-emerald-50 text-emerald-600 border-emerald-200' : 'bg-rose-50 text-rose-600 border-rose-200'}`}>
+                <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold border whitespace-nowrap ${product.stock > 0 ? 'bg-emerald-50 text-emerald-600 border-emerald-200' : 'bg-rose-50 text-rose-600 border-rose-200'}`}>
                   {product.stock > 0 ? (language === 'hi' ? 'सक्रिय' : 'ACTIVE') : (language === 'hi' ? 'आउट ऑफ स्टॉक' : 'OUT OF STOCK')}
                 </span>
               </div>
             </div>
             
             {isAdmin && (
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 w-full md:w-auto justify-end sm:justify-start">
                 {!isPreviewMode ? (
                   <>
                     <button 
                       onClick={() => setIsPreviewMode(true)} 
-                      className="px-3 py-1.5 text-xs font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors flex items-center gap-1.5 border border-slate-200 shadow-sm cursor-pointer"
+                      className="flex-1 sm:flex-none px-3 py-1.5 text-xs font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors flex items-center justify-center gap-1.5 border border-slate-200 shadow-sm cursor-pointer whitespace-nowrap"
                     >
                       <Eye className="h-3.5 w-3.5" />
                       View Product
@@ -1226,7 +1226,7 @@ export const ProductDetails = ({ productId }) => {
                     <button 
                       onClick={handleSaveDetails} 
                       disabled={savingDetails} 
-                      className="px-4 py-1.5 text-xs font-bold text-white bg-emerald-500 hover:bg-emerald-600 rounded-lg transition-colors flex items-center gap-1.5 shadow-sm cursor-pointer"
+                      className="flex-1 sm:flex-none px-4 py-1.5 text-xs font-bold text-white bg-emerald-500 hover:bg-emerald-600 rounded-lg transition-colors flex items-center justify-center gap-1.5 shadow-sm cursor-pointer whitespace-nowrap"
                     >
                       <Edit2 className="h-3.5 w-3.5" />
                       {savingDetails ? 'Saving...' : 'Save Changes'}
@@ -1235,7 +1235,7 @@ export const ProductDetails = ({ productId }) => {
                 ) : (
                   <button 
                     onClick={() => setIsPreviewMode(false)} 
-                    className="px-4 py-1.5 text-xs font-bold text-white bg-emerald-500 hover:bg-emerald-600 rounded-lg transition-colors flex items-center gap-1.5 shadow-sm cursor-pointer"
+                    className="w-full sm:w-auto px-4 py-1.5 text-xs font-bold text-white bg-emerald-500 hover:bg-emerald-600 rounded-lg transition-colors flex items-center justify-center gap-1.5 shadow-sm cursor-pointer"
                   >
                     <Edit2 className="h-3.5 w-3.5" />
                     Edit Product
@@ -1546,9 +1546,9 @@ export const ProductDetails = ({ productId }) => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="bg-slate-50 dark:bg-slate-950 p-4 rounded-xl border border-slate-100 dark:border-slate-850">
                     <span className="text-xs font-bold text-slate-500 block mb-3">Revenue Trend (30 Days)</span>
-                    <div className="h-64 w-full bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 flex items-center justify-center p-4">
+                    <div className="h-64 w-full bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 flex items-center justify-start overflow-x-auto p-2 md:p-4">
                       {analyticsData?.charts?.revenue_chart ? (
-                        <img src={`${API_BASE_URL.replace('/api', '')}${analyticsData.charts.revenue_chart}`} alt="Revenue Trend" className="max-h-full object-contain mix-blend-multiply dark:mix-blend-normal" />
+                        <img src={`${API_BASE_URL.replace('/api', '')}${analyticsData.charts.revenue_chart}`} alt="Revenue Trend" className="h-full min-w-[550px] md:min-w-0 object-contain mix-blend-multiply dark:mix-blend-normal" />
                       ) : (
                         <div className="w-full h-full animate-pulse flex flex-col items-end justify-end space-y-2 pb-2">
                           <div className="w-full flex items-end justify-around space-x-2 h-4/5">
@@ -1565,9 +1565,9 @@ export const ProductDetails = ({ productId }) => {
                   </div>
                   <div className="bg-slate-50 dark:bg-slate-950 p-4 rounded-xl border border-slate-100 dark:border-slate-850">
                     <span className="text-xs font-bold text-slate-500 block mb-3">Sales Volume & Orders Trend</span>
-                    <div className="h-64 w-full bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 flex items-center justify-center p-4">
+                    <div className="h-64 w-full bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 flex items-center justify-start overflow-x-auto p-2 md:p-4">
                       {analyticsData?.charts?.sales_trend ? (
-                        <img src={`${API_BASE_URL.replace('/api', '')}${analyticsData.charts.sales_trend}`} alt="Sales Trend" className="max-h-full object-contain mix-blend-multiply dark:mix-blend-normal" />
+                        <img src={`${API_BASE_URL.replace('/api', '')}${analyticsData.charts.sales_trend}`} alt="Sales Trend" className="h-full min-w-[550px] md:min-w-0 object-contain mix-blend-multiply dark:mix-blend-normal" />
                       ) : (
                         <div className="w-full h-full animate-pulse flex flex-col items-end justify-end space-y-2 pb-2">
                           <div className="w-full flex items-end justify-around space-x-2 h-4/5">
