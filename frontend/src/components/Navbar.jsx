@@ -317,14 +317,14 @@ export const Navbar = () => {
                     {notificationsOpen && (
                       <>
                         <div className="fixed inset-0 z-40" onClick={() => setNotificationsOpen(false)} />
-                        <motion.div
-                          initial={{ opacity: 0, y: 8, scale: 0.95 }}
-                          animate={{ opacity: 1, y: 0, scale: 1 }}
-                          exit={{ opacity: 0, y: 8, scale: 0.95 }}
-                          transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
-                          className="absolute right-0 mt-2 w-80 sm:w-96 bg-white dark:bg-slate-900 border border-[#F2E8D9] dark:border-slate-855 rounded-2xl shadow-xl z-50 overflow-hidden origin-top-right"
-                        >
-                          <div className="px-4 py-3 bg-[#FAFAFA] dark:bg-slate-855 border-b border-[#F2E8D9]/50 dark:border-slate-800/80 flex items-center justify-between">
+                          <motion.div
+                            initial={{ opacity: 0, y: 8, scale: 0.95 }}
+                            animate={{ opacity: 1, y: 0, scale: 1 }}
+                            exit={{ opacity: 0, y: 8, scale: 0.95 }}
+                            transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
+                            className="absolute right-0 mt-2 w-80 sm:w-96 bg-white dark:bg-slate-900 border border-[#F2E8D9] dark:border-slate-800 rounded-2xl shadow-xl z-50 overflow-hidden origin-top-right"
+                          >
+                            <div className="px-4 py-3 bg-white dark:bg-slate-900 border-b border-[#F2E8D9]/50 dark:border-slate-800/80 flex items-center justify-between">
                             <div className="flex items-center gap-1.5">
                               <span className="font-bold text-xs text-slate-850 dark:text-slate-100 uppercase tracking-wide">{t('navbar.notifications')}</span>
                               {unreadCount > 0 && (
@@ -828,7 +828,7 @@ export const Navbar = () => {
                             transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
                             className="absolute right-0 mt-2 w-80 sm:w-96 bg-white dark:bg-slate-900 border border-[#F2E8D9] dark:border-slate-850 rounded-2xl shadow-xl z-50 overflow-hidden origin-top-right"
                           >
-                            <div className="px-4 py-3 bg-[#FAFAFA] dark:bg-slate-855 border-b border-[#F2E8D9]/50 dark:border-slate-800/80 flex items-center justify-between">
+                            <div className="px-4 py-3 bg-white dark:bg-slate-900 border-b border-[#F2E8D9]/50 dark:border-slate-800/80 flex items-center justify-between">
                               <div className="flex items-center gap-1.5">
                                 <span className="font-bold text-xs text-slate-850 dark:text-slate-100 uppercase tracking-wide">{t('navbar.notifications')}</span>
                                 {unreadCount > 0 && (
@@ -890,7 +890,7 @@ export const Navbar = () => {
 
                 {/* Notifications Bell (Mobile) */}
                 {user && (
-                  <div className="relative">
+                  <div className="static">
                     <button
                       onClick={() => setNotificationsOpen(!notificationsOpen)}
                       className="relative p-1.5 sm:p-2 rounded-xl text-[#3F1D5A] dark:text-[#EFE7DB] hover:bg-[#FAFAFA] dark:hover:bg-slate-800 transition-colors cursor-pointer"
@@ -913,9 +913,9 @@ export const Navbar = () => {
                             animate={{ opacity: 1, y: 0, scale: 1 }}
                             exit={{ opacity: 0, y: 8, scale: 0.95 }}
                             transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
-                            className="absolute right-0 mt-2 w-72 sm:w-80 bg-white dark:bg-slate-900 border border-[#F2E8D9] dark:border-slate-850 rounded-2xl shadow-xl z-50 overflow-hidden origin-top-right"
+                            className="absolute right-4 top-full mt-2 w-72 sm:w-80 bg-white dark:bg-slate-900 border border-[#F2E8D9] dark:border-slate-850 rounded-2xl shadow-xl z-50 overflow-hidden origin-top-right"
                           >
-                            <div className="px-3 py-2.5 bg-[#FAFAFA] dark:bg-slate-855 border-b border-[#F2E8D9]/50 dark:border-slate-800/80 flex items-center justify-between">
+                            <div className="px-3 py-2.5 bg-white dark:bg-slate-900 border-b border-[#F2E8D9]/50 dark:border-slate-800/80 flex items-center justify-between">
                               <div className="flex items-center gap-1.5">
                                 <span className="font-bold text-[10px] sm:text-xs text-slate-850 dark:text-slate-100 uppercase tracking-wide">{t('navbar.notifications')}</span>
                                 {unreadCount > 0 && (
