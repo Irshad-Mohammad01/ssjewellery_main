@@ -2164,22 +2164,41 @@ export const ProductDetails = ({ productId }) => {
               {/* Product Specifications & Trust Section */}
               <div className="divide-y divide-slate-100 dark:divide-slate-800/80 text-xs px-2 space-y-4">
                 
-                {/* 1. Product Keys & Values (Specifications) */}
-                {getLocalizedSpecifications().length > 0 && (
-                  <div className="py-2.5 space-y-2">
-                    <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider block">
-                      {language === 'hi' ? 'उत्पाद विवरण (विनिर्देश)' : 'Product Specifications'}
-                    </span>
-                    <div className="space-y-1.5">
-                      {getLocalizedSpecifications().map((spec, idx) => (
-                        <div key={idx} className="flex justify-between items-center py-1 text-slate-700 dark:text-slate-350">
-                          <span className="font-semibold text-slate-400 capitalize">{spec.key}</span>
-                          <span className="font-bold text-right text-slate-800 dark:text-slate-200">{spec.value}</span>
-                        </div>
-                      ))}
-                    </div>
+                {/* 1. Product Keys & Values - Jewellery Attributes */}
+                <div className="py-2.5 space-y-2">
+                  <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider block">
+                    {language === 'hi' ? 'उत्पाद विवरण' : 'Product Details'}
+                  </span>
+                  <div className="space-y-0">
+                    {/* From Specifications (admin-entered key:value pairs) */}
+                    {getLocalizedSpecifications().length > 0
+                      ? getLocalizedSpecifications().map((spec, idx) => (
+                          <div key={idx} className="flex justify-between items-center py-1.5 border-b border-slate-100 dark:border-slate-800/60 last:border-0">
+                            <span className="text-slate-400 dark:text-slate-500 font-semibold capitalize">{spec.key}</span>
+                            <span className="font-bold text-[#D4A75F] text-right">{spec.value}</span>
+                          </div>
+                        ))
+                      : /* Fallback: show variant attributes + category as key-value */
+                        [
+                          product.category && { key: language === 'hi' ? 'श्रेणी' : 'Category', value: translateCategory(product.category) },
+                          product.brand   && { key: language === 'hi' ? 'ब्रांड' : 'Brand',    value: product.brand },
+                          ...Object.entries(getGroupedVariants()).map(([attr, vals]) => ({
+                            key: attr,
+                            value: vals.join(', ')
+                          })),
+                          { key: language === 'hi' ? 'उपलब्धता' : 'Availability', value: product.stock > 0 ? (language === 'hi' ? `${product.stock} स्टॉक में` : `${product.stock} in Stock`) : (language === 'hi' ? 'स्टॉक खत्म' : 'Out of Stock') },
+                          { key: language === 'hi' ? 'प्रमाणन' : 'Certification', value: 'BIS Hallmarked' },
+                          { key: language === 'hi' ? 'पत्थर' : 'Stone Type', value: language === 'hi' ? 'प्रमाणित रत्न' : 'Certified Gemstone' },
+                          { key: language === 'hi' ? 'धातु' : 'Metal', value: language === 'hi' ? 'शुद्ध सोना / चांदी' : 'Pure Gold / Silver' },
+                        ].filter(Boolean).map((item, idx) => (
+                          <div key={idx} className="flex justify-between items-center py-1.5 border-b border-slate-100 dark:border-slate-800/60 last:border-0">
+                            <span className="text-slate-400 dark:text-slate-500 font-semibold capitalize">{item.key}</span>
+                            <span className="font-bold text-[#D4A75F] text-right">{item.value}</span>
+                          </div>
+                        ))
+                    }
                   </div>
-                )}
+                </div>
 
                 {/* 2. Premium Jewellery Trust Items */}
                 <div className="pt-3 space-y-3">
