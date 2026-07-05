@@ -25,6 +25,27 @@ export const Navbar = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  // Close dropdowns when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (!event.target.closest('.notification-container-ref')) {
+        setNotificationsOpen(false);
+      }
+      if (!event.target.closest('.profile-container-ref')) {
+        setProfileDropdownOpen(false);
+      }
+      if (!event.target.closest('.lang-container-ref')) {
+        setLangDropdownOpen(false);
+      }
+    };
+    document.addEventListener('click', handleClickOutside, { capture: true });
+    document.addEventListener('touchstart', handleClickOutside, { capture: true });
+    return () => {
+      document.removeEventListener('click', handleClickOutside, { capture: true });
+      document.removeEventListener('touchstart', handleClickOutside, { capture: true });
+    };
+  }, []);
+
   // Search query & category state
   const [searchVal, setSearchVal] = useState('');
   const [showCategoryMenu, setShowCategoryMenu] = useState(false);
@@ -253,7 +274,7 @@ export const Navbar = () => {
             {/* DESKTOP RIGHT SECTION: Visible only on lg screens and up */}
             <div className="hidden lg:flex items-center gap-1.5 sm:gap-2.5 md:gap-3.5 lg:gap-4 flex-shrink-0 lg:flex-1 lg:justify-end">
               {/* Language Selector */}
-              <div className="relative">
+              <div className="relative lang-container-ref">
                 <button
                   onClick={() => setLangDropdownOpen(!langDropdownOpen)}
                   className="flex items-center gap-1 p-2 rounded-xl text-[#3F1D5A] dark:text-[#EFE7DB] hover:bg-[#FAFAFA] dark:hover:bg-slate-800 transition-colors cursor-pointer text-xs font-bold uppercase"
@@ -264,9 +285,7 @@ export const Navbar = () => {
                 </button>
                 <AnimatePresence>
                   {langDropdownOpen && (
-                    <>
-                      <div className="fixed inset-0 z-10" onClick={() => setLangDropdownOpen(false)} />
-                      <motion.div
+                    <motion.div
                         initial={{ opacity: 0, y: 8, scale: 0.95 }}
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         exit={{ opacity: 0, y: 8, scale: 0.95 }}
@@ -292,14 +311,13 @@ export const Navbar = () => {
                           </button>
                         ))}
                       </motion.div>
-                    </>
                   )}
                 </AnimatePresence>
               </div>
 
               {/* Notifications Bell */}
               {user && (
-                <div className="relative">
+                <div className="relative notification-container-ref">
                   <button
                     onClick={() => setNotificationsOpen(!notificationsOpen)}
                     className="relative p-2 rounded-xl text-[#3F1D5A] dark:text-[#EFE7DB] hover:bg-[#FAFAFA] dark:hover:bg-slate-800 transition-colors cursor-pointer"
@@ -315,9 +333,7 @@ export const Navbar = () => {
 
                   <AnimatePresence>
                     {notificationsOpen && (
-                      <>
-                        <div className="fixed inset-0 z-40" onClick={() => setNotificationsOpen(false)} />
-                          <motion.div
+                      <motion.div
                             initial={{ opacity: 0, y: 8, scale: 0.95 }}
                             animate={{ opacity: 1, y: 0, scale: 1 }}
                             exit={{ opacity: 0, y: 8, scale: 0.95 }}
@@ -504,7 +520,6 @@ export const Navbar = () => {
                             </div>
                           )}
                         </motion.div>
-                      </>
                     )}
                   </AnimatePresence>
                 </div>
@@ -598,7 +613,7 @@ export const Navbar = () => {
 
               {/* User Profile / Login Dropdown */}
               {user ? (
-                <div className="relative">
+                <div className="relative profile-container-ref">
                   <button
                     onClick={() => setProfileDropdownOpen(!profileDropdownOpen)}
                     className="flex items-center space-x-1.5 p-1.5 rounded-xl border border-[#F2E8D9] dark:border-slate-700 bg-[#FAFAFA] dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-750 transition-colors cursor-pointer"
@@ -613,9 +628,7 @@ export const Navbar = () => {
 
                   <AnimatePresence>
                     {profileDropdownOpen && (
-                      <>
-                        <div className="fixed inset-0 z-10" onClick={() => setProfileDropdownOpen(false)} />
-                        <motion.div
+                      <motion.div
                           initial={{ opacity: 0, y: 8, scale: 0.95 }}
                           animate={{ opacity: 1, y: 0, scale: 1 }}
                           exit={{ opacity: 0, y: 8, scale: 0.95 }}
@@ -679,7 +692,6 @@ export const Navbar = () => {
                             <span>{t('navbar.sign_out')}</span>
                           </button>
                         </motion.div>
-                      </>
                     )}
                   </AnimatePresence>
                 </div>
@@ -803,7 +815,7 @@ export const Navbar = () => {
 
                 {/* Notifications Bell (Desktop Only) */}
                 {user && (
-                  <div className="relative hidden lg:block">
+                  <div className="relative hidden lg:block notification-container-ref">
                     <button
                       onClick={() => setNotificationsOpen(!notificationsOpen)}
                       className="relative p-2 rounded-xl text-[#3F1D5A] dark:text-[#EFE7DB] hover:bg-[#FAFAFA] dark:hover:bg-slate-800 transition-colors cursor-pointer"
@@ -819,9 +831,7 @@ export const Navbar = () => {
 
                     <AnimatePresence>
                       {notificationsOpen && (
-                        <>
-                          <div className="fixed inset-0 z-40" onClick={() => setNotificationsOpen(false)} />
-                          <motion.div
+                        <motion.div
                             initial={{ opacity: 0, y: 8, scale: 0.95 }}
                             animate={{ opacity: 1, y: 0, scale: 1 }}
                             exit={{ opacity: 0, y: 8, scale: 0.95 }}
@@ -874,7 +884,6 @@ export const Navbar = () => {
                               )}
                             </div>
                           </motion.div>
-                        </>
                       )}
                     </AnimatePresence>
                   </div>
@@ -890,7 +899,7 @@ export const Navbar = () => {
 
                 {/* Notifications Bell (Mobile) */}
                 {user && (
-                  <div className="static">
+                  <div className="static notification-container-ref">
                     <button
                       onClick={() => setNotificationsOpen(!notificationsOpen)}
                       className="relative p-1.5 sm:p-2 rounded-xl text-[#3F1D5A] dark:text-[#EFE7DB] hover:bg-[#FAFAFA] dark:hover:bg-slate-800 transition-colors cursor-pointer"
@@ -906,9 +915,7 @@ export const Navbar = () => {
 
                     <AnimatePresence>
                       {notificationsOpen && (
-                        <>
-                          <div className="fixed inset-0 z-40" onClick={() => setNotificationsOpen(false)} />
-                          <motion.div
+                        <motion.div
                             initial={{ opacity: 0, y: 8, scale: 0.95 }}
                             animate={{ opacity: 1, y: 0, scale: 1 }}
                             exit={{ opacity: 0, y: 8, scale: 0.95 }}
@@ -1071,7 +1078,6 @@ export const Navbar = () => {
                               </div>
                             )}
                           </motion.div>
-                        </>
                       )}
                     </AnimatePresence>
                   </div>
@@ -1101,7 +1107,7 @@ export const Navbar = () => {
 
                 {/* Profile / Sign In (Desktop & Mobile) */}
                 {user ? (
-                  <div className="relative">
+                  <div className="relative profile-container-ref">
                     <button
                       onClick={() => setProfileDropdownOpen(!profileDropdownOpen)}
                       className="flex items-center space-x-1.5 p-1.5 rounded-xl border border-[#F2E8D9] dark:border-slate-700 bg-[#FAFAFA] dark:bg-slate-800 cursor-pointer"
@@ -1111,9 +1117,7 @@ export const Navbar = () => {
                     </button>
                     <AnimatePresence>
                       {profileDropdownOpen && (
-                        <>
-                          <div className="fixed inset-0 z-10" onClick={() => setProfileDropdownOpen(false)} />
-                          <motion.div
+                        <motion.div
                             initial={{ opacity: 0, y: 8, scale: 0.95 }}
                             animate={{ opacity: 1, y: 0, scale: 1 }}
                             exit={{ opacity: 0, y: 8, scale: 0.95 }}
@@ -1176,7 +1180,6 @@ export const Navbar = () => {
                               <span>{t('navbar.sign_out')}</span>
                             </button>
                           </motion.div>
-                        </>
                       )}
                     </AnimatePresence>
                   </div>
