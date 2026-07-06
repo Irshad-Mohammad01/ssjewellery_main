@@ -2331,7 +2331,7 @@ export const ProductDetails = ({ productId }) => {
                           <div key={rev._id || index} className="pt-3 first:pt-0">
                             <div className="flex justify-between items-start">
                               <div>
-                                <p className="font-semibold text-xs text-slate-880 dark:text-slate-100">{rev.user_name}</p>
+                                <p className="font-semibold text-xs text-slate-800 dark:text-slate-100 break-words whitespace-normal">{rev.user_name}</p>
                                 <div className="flex text-amber-400 mt-0.5">
                                   {[...Array(5)].map((_, idx) => (
                                     <Star key={idx} className={`h-3 w-3 ${idx < rev.rating ? 'fill-amber-400 text-amber-400' : 'text-amber-200 dark:text-amber-300'}`} />
