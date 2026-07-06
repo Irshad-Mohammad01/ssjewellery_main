@@ -5,6 +5,7 @@ import { CreditCard, Truck, ShieldCheck, Mail, Key, ShoppingBag, CheckCircle, Ar
 import { CartContext } from '../context/CartContext';
 import { AuthContext, API_BASE_URL } from '../context/AuthContext';
 import { useTranslation } from '../hooks/useTranslation';
+import { formatPrice } from '../utils/priceFormatter';
 
 export const Checkout = () => {
   const navigate = useNavigate();
@@ -37,7 +38,8 @@ export const Checkout = () => {
     pincode: '',
     address_type: 'Home',
     is_default: false,
-    alternate_mobile_number: ''
+    alternate_mobile_number: '',
+    country: 'India'
   });
 
   // Shipping details state (including guest variables)
@@ -55,7 +57,8 @@ export const Checkout = () => {
     area: '',
     landmark: '',
     address_type: 'Home',
-    alternate_mobile_number: ''
+    alternate_mobile_number: '',
+    country: 'India'
   });
 
   // Helper function to format street part of the address
@@ -88,7 +91,8 @@ export const Checkout = () => {
       addr.area,
       addr.landmark,
       addr.city,
-      addr.state
+      addr.state,
+      addr.country
     ];
     
     fields.forEach(field => {
@@ -108,6 +112,13 @@ export const Checkout = () => {
   };
 
 
+  const scrollToAddress = () => {
+    const section = document.getElementById("address-section");
+    if (section) {
+      section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  };
+
   // Fetch addresses if logged in
   const fetchAddresses = async () => {
     if (user) {
@@ -122,6 +133,10 @@ export const Checkout = () => {
           setSelectedAddressId(def.id);
         } else if (fetched.length > 0) {
           setSelectedAddressId(fetched[0].id);
+        } else {
+          // If no address exists: focus/open the Add Address form
+          setShowAddressForm(true);
+          setTimeout(scrollToAddress, 100);
         }
       } catch (err) {
         console.error("Failed to fetch addresses:", err);
@@ -204,7 +219,8 @@ export const Checkout = () => {
           area: active.area || '',
           landmark: active.landmark || '',
           address_type: active.address_type || 'Home',
-          alternate_mobile_number: active.alternate_mobile_number || ''
+          alternate_mobile_number: active.alternate_mobile_number || '',
+          country: active.country || 'India'
         }));
       }
     }
@@ -256,7 +272,8 @@ export const Checkout = () => {
       !addressForm.landmark?.trim() ||
       !addressForm.city?.trim() ||
       !addressForm.state?.trim() ||
-      !addressForm.pincode?.trim()
+      !addressForm.pincode?.trim() ||
+      !addressForm.country?.trim()
     ) {
       setError(t('checkout_page.validation_error', { defaultValue: 'Please fill in all required fields.' }));
       return;
@@ -301,7 +318,8 @@ export const Checkout = () => {
         pincode: '',
         address_type: 'Home',
         is_default: false,
-        alternate_mobile_number: ''
+        alternate_mobile_number: '',
+        country: 'India'
       });
       setValidationError('');
       await fetchAddresses();
@@ -323,7 +341,8 @@ export const Checkout = () => {
       pincode: addr.pincode || '',
       address_type: addr.address_type || 'Home',
       is_default: addr.is_default || false,
-      alternate_mobile_number: addr.alternate_mobile_number || ''
+      alternate_mobile_number: addr.alternate_mobile_number || '',
+      country: addr.country || 'India'
     });
     setValidationError('');
     setEditingAddressId(addr.id);
@@ -441,15 +460,88 @@ export const Checkout = () => {
     }
   };
 
+  const isAddressSelectionValid = () => {
+    if (user) {
+      if (addresses.length === 0 || !selectedAddressId || showAddressForm) {
+        return false;
+      }
+      const activeAddress = addresses.find(a => a.id === selectedAddressId);
+      if (!activeAddress) return false;
+      
+      const house = activeAddress.house_number || activeAddress.house;
+      const street = activeAddress.street || activeAddress.address;
+      
+      return !!(
+        shippingDetails.name?.trim() &&
+        shippingDetails.phone?.trim() &&
+        house?.trim() &&
+        street?.trim() &&
+        activeAddress.area?.trim() &&
+        activeAddress.city?.trim() &&
+        activeAddress.state?.trim() &&
+        activeAddress.pincode?.trim() &&
+        (activeAddress.country || 'India')?.trim()
+      );
+    } else {
+      // Guest checks
+      return !!(
+        shippingDetails.name?.trim() &&
+        shippingDetails.phone?.trim() &&
+        shippingDetails.phone.replace(/\D/g, '').length === 10 &&
+        shippingDetails.email?.trim() &&
+        isEmailValid(shippingDetails.email) &&
+        shippingDetails.house_number?.trim() &&
+        shippingDetails.street?.trim() &&
+        shippingDetails.area?.trim() &&
+        shippingDetails.landmark?.trim() &&
+        shippingDetails.city?.trim() &&
+        shippingDetails.state?.trim() &&
+        shippingDetails.pincode?.trim() &&
+        shippingDetails.country?.trim()
+      );
+    }
+  };
+
   // Form validations
   const handleNextStep = (e) => {
     if (e && e.preventDefault) e.preventDefault();
     
     if (user) {
-      if (!selectedAddressId) {
-        setError(t('checkout_page.select_address_error', { defaultValue: 'Please select a delivery address or add a new one.' }));
+      if (addresses.length === 0) {
+        setError("Please add and select a complete delivery address before continuing.");
+        setShowAddressForm(true);
+        setTimeout(scrollToAddress, 100);
         return;
       }
+      if (!selectedAddressId) {
+        setError("Please add and select a complete delivery address before continuing.");
+        return;
+      }
+      const activeAddress = addresses.find(a => a.id === selectedAddressId);
+      if (!activeAddress) {
+        setError("Please add and select a complete delivery address before continuing.");
+        return;
+      }
+      
+      const house = activeAddress.house_number || activeAddress.house;
+      const street = activeAddress.street || activeAddress.address;
+      const country = activeAddress.country || 'India';
+
+      if (
+        !shippingDetails.name?.trim() ||
+        !shippingDetails.phone?.trim() ||
+        !house?.trim() ||
+        !street?.trim() ||
+        !activeAddress.area?.trim() ||
+        !activeAddress.city?.trim() ||
+        !activeAddress.state?.trim() ||
+        !activeAddress.pincode?.trim() ||
+        !country?.trim()
+      ) {
+        setError("Please add and select a complete delivery address before continuing.");
+        return;
+      }
+      
       if (showAddressForm) {
         setError(t('checkout_page.save_address_first', { defaultValue: 'Please save your address details first.' }));
         return;
@@ -466,9 +558,10 @@ export const Checkout = () => {
         !shippingDetails.landmark?.trim() ||
         !shippingDetails.city?.trim() ||
         !shippingDetails.state?.trim() ||
-        !shippingDetails.pincode?.trim()
+        !shippingDetails.pincode?.trim() ||
+        !shippingDetails.country?.trim()
       ) {
-        setError(t('checkout_page.validation_error', { defaultValue: 'Please fill in all required fields.' }));
+        setError("Please add and select a complete delivery address before continuing.");
         return;
       }
       if (shippingDetails.phone.replace(/\D/g, '').length !== 10) {
@@ -723,7 +816,7 @@ export const Checkout = () => {
 
               {/* Delivery Address Section */}
               {user ? (
-                <div className="bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800 rounded-3xl p-6 shadow-sm space-y-6 text-left">
+                <div id="address-section" className="bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800 rounded-3xl p-6 shadow-sm space-y-6 text-left">
                   <div className="flex justify-between items-center border-b border-slate-100 dark:border-slate-800 pb-3">
                     <h2 className="text-lg font-bold flex items-center gap-2">
                       <Truck className="h-5 w-5 text-emerald-500" />
@@ -743,12 +836,18 @@ export const Checkout = () => {
                             state: '',
                             pincode: '',
                             address_type: 'Home',
-                            is_default: false
+                            is_default: false,
+                            alternate_mobile_number: '',
+                            country: 'India'
                           });
                           setEditingAddressId(null);
                           setShowAddressForm(true);
                         }}
-                        className="flex items-center gap-1 text-xs font-bold text-emerald-500 hover:text-emerald-600 transition-colors"
+                        className={`flex items-center gap-1 text-xs font-bold transition-all px-3 py-1.5 rounded-xl ${
+                          addresses.length === 0
+                            ? 'bg-emerald-500 text-white animate-pulse shadow-md'
+                            : 'text-emerald-500 hover:text-emerald-600'
+                        }`}
                       >
                         <Plus className="h-4 w-4" />
                         <span>Add New Address</span>
@@ -876,7 +975,7 @@ export const Checkout = () => {
                         </div>
                       </div>
 
-                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                      <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
                         <div>
                           <label className="block text-xs font-semibold text-slate-400 mb-1">City *</label>
                           <input
@@ -897,6 +996,17 @@ export const Checkout = () => {
                             onChange={(e) => setAddressForm({...addressForm, state: e.target.value})}
                             className="w-full px-4 py-2.5 text-sm bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/50 text-slate-800 dark:text-slate-100"
                             placeholder="e.g. Rajasthan"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-semibold text-slate-400 mb-1">Country *</label>
+                          <input
+                            type="text"
+                            required
+                            value={addressForm.country}
+                            onChange={(e) => setAddressForm({...addressForm, country: e.target.value})}
+                            className="w-full px-4 py-2.5 text-sm bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/50 text-slate-800 dark:text-slate-100"
+                            placeholder="e.g. India"
                           />
                         </div>
                         <div>
@@ -1012,9 +1122,9 @@ export const Checkout = () => {
                                     <p>{addr.street}</p>
                                     <p>{addr.area}</p>
                                     {addr.landmark && <p className="text-slate-400 dark:text-slate-450 text-[11px]">Landmark: {addr.landmark}</p>}
-                                    <p>{addr.city}, {addr.state} - {addr.pincode}</p>
+                                    <p>{addr.city}, {addr.state} - {addr.pincode}, {addr.country || 'India'}</p>
                                     {addr.alternate_mobile_number && (
-                                      <p className="text-slate-450 dark:text-slate-500 text-[10px] mt-1 font-semibold font-mono">Alt Mobile: {addr.alternate_mobile_number}</p>
+                                      <p className="text-slate-455 dark:text-slate-500 text-[10px] mt-1 font-semibold font-mono">Alt Mobile: {addr.alternate_mobile_number}</p>
                                     )}
                                   </div>
                                 </div>
@@ -1071,7 +1181,8 @@ export const Checkout = () => {
                       <button
                         type="button"
                         onClick={handleNextStep}
-                        className="w-full flex items-center justify-center space-x-2 py-3 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl text-sm font-bold shadow-md hover:scale-[1.01] transition-all"
+                        disabled={!isAddressSelectionValid()}
+                        className="w-full flex items-center justify-center space-x-2 py-3 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl text-sm font-bold shadow-md hover:scale-[1.01] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         <span>{t('checkout_page.continue_payment')}</span>
                         <ArrowRight className="h-4 w-4" />
@@ -1081,7 +1192,7 @@ export const Checkout = () => {
                 </div>
               ) : (
                 /* Guest Checkout Address Form */
-                <form onSubmit={handleNextStep} className="bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800 rounded-3xl p-6 shadow-sm space-y-6 text-left">
+                <form id="address-section" onSubmit={handleNextStep} className="bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800 rounded-3xl p-6 shadow-sm space-y-6 text-left">
                   <h2 className="text-lg font-bold border-b border-slate-100 dark:border-slate-800 pb-3 flex items-center gap-2">
                     <Truck className="h-5 w-5 text-emerald-500" />
                     <span>{t('checkout_page.shipping_details')}</span>
@@ -1211,7 +1322,7 @@ export const Checkout = () => {
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
                     <div>
                       <label className="block text-xs font-semibold text-slate-400 mb-1">City *</label>
                       <input
@@ -1230,6 +1341,17 @@ export const Checkout = () => {
                         value={shippingDetails.state}
                         onChange={(e) => handleGuestInputChange('state', e.target.value)}
                         className="w-full px-4 py-3 text-base bg-slate-50 dark:bg-slate-955 border border-slate-200 dark:border-slate-800 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/50 text-slate-800 dark:text-slate-100"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-400 mb-1">Country *</label>
+                      <input
+                        type="text"
+                        required
+                        value={shippingDetails.country}
+                        onChange={(e) => handleGuestInputChange('country', e.target.value)}
+                        className="w-full px-4 py-3 text-base bg-slate-50 dark:bg-slate-955 border border-slate-200 dark:border-slate-800 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/50 text-slate-800 dark:text-slate-100"
+                        placeholder="e.g. India"
                       />
                     </div>
                     <div>
@@ -1256,7 +1378,7 @@ export const Checkout = () => {
 
                   <button
                     type="submit"
-                    disabled={shippingDetails.phone.length !== 10 || !isEmailValid(shippingDetails.email)}
+                    disabled={!isAddressSelectionValid()}
                     className="w-full flex items-center justify-center space-x-2 py-3 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl text-sm font-bold shadow-md hover:scale-[1.01] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     <span>{t('checkout_page.continue_payment')}</span>
@@ -1276,7 +1398,7 @@ export const Checkout = () => {
                       {item.name} <span className="text-slate-455">x{item.quantity}</span>
                     </span>
                     <span className="text-xs font-bold text-slate-900 dark:text-slate-50 flex-shrink-0">
-                      ₹{Math.round(item.price * item.quantity).toLocaleString('en-IN')}
+                      ₹{formatPrice(Math.round(item.price * item.quantity))}
                     </span>
                   </div>
                 ))}
@@ -1284,19 +1406,19 @@ export const Checkout = () => {
               <div className="border-t border-slate-100 dark:border-slate-800 pt-3 space-y-2 text-xs">
                 <div className="flex justify-between text-slate-400">
                   <span>{t('checkout_page.subtotal')}</span>
-                  <span>₹{Math.round(checkoutTotal).toLocaleString('en-IN')}</span>
+                  <span>₹{formatPrice(Math.round(checkoutTotal))}</span>
                 </div>
                 <div className="flex justify-between text-slate-400">
                   <span>{t('checkout_page.gst')}</span>
-                  <span>₹{gstTax.toLocaleString('en-IN')}</span>
+                  <span>₹{formatPrice(gstTax)}</span>
                 </div>
                 <div className="flex justify-between text-slate-400">
                   <span>{t('checkout_page.shipping_fee')}</span>
-                  <span>{shippingFee === 0 ? t('cart_page.free') : `₹${shippingFee.toLocaleString('en-IN')}`}</span>
+                  <span>{shippingFee === 0 ? t('cart_page.free') : `₹${formatPrice(shippingFee)}`}</span>
                 </div>
                 <div className="flex justify-between text-sm font-black pt-2 border-t border-slate-100 dark:border-slate-805">
                   <span>{t('checkout_page.total_amount')}</span>
-                  <span>₹{grandTotal.toLocaleString('en-IN')}</span>
+                  <span>₹{formatPrice(grandTotal)}</span>
                 </div>
               </div>
             </div>
@@ -1428,7 +1550,7 @@ export const Checkout = () => {
                     setCheckboxChecked(false);
                     setStep(1);
                   }}
-                  className="flex-1 py-3 bg-slate-100 hover:bg-slate-200 dark:bg-slate-855 dark:hover:bg-slate-800 text-slate-800 dark:text-slate-200 rounded-xl text-sm font-bold shadow-sm flex items-center justify-center gap-1.5"
+                  className="btn-secondary-white flex-1 py-3 rounded-xl text-sm shadow-sm flex items-center justify-center gap-1.5 transition-all"
                 >
                   <ArrowLeft className="h-4 w-4" />
                   <span>{t('checkout_page.edit_address')}</span>
@@ -1457,19 +1579,19 @@ export const Checkout = () => {
               <div className="text-xs space-y-3">
                 <div className="flex justify-between text-slate-400">
                   <span>{t('checkout_page.subtotal')}</span>
-                  <span className="font-semibold text-slate-800 dark:text-slate-200">₹{Math.round(checkoutTotal).toLocaleString('en-IN')}</span>
+                  <span className="font-semibold text-slate-800 dark:text-slate-200">₹{formatPrice(Math.round(checkoutTotal))}</span>
                 </div>
                 <div className="flex justify-between text-slate-400">
                   <span>{t('checkout_page.gst')}</span>
-                  <span className="font-semibold text-slate-800 dark:text-slate-200">₹{gstTax.toLocaleString('en-IN')}</span>
+                  <span className="font-semibold text-slate-800 dark:text-slate-200">₹{formatPrice(gstTax)}</span>
                 </div>
                 <div className="flex justify-between text-slate-400">
                   <span>{t('checkout_page.shipping_cost')}</span>
-                  <span className="font-semibold text-slate-800 dark:text-slate-200">{shippingFee === 0 ? t('cart_page.free') : `₹${shippingFee.toLocaleString('en-IN')}`}</span>
+                  <span className="font-semibold text-slate-800 dark:text-slate-200">{shippingFee === 0 ? t('cart_page.free') : `₹${formatPrice(shippingFee)}`}</span>
                 </div>
                 <div className="flex justify-between text-sm font-black pt-2 border-t border-slate-100 dark:border-slate-805">
                   <span>{t('checkout_page.total_amount')}</span>
-                  <span className="text-base text-emerald-500 font-extrabold">₹{grandTotal.toLocaleString('en-IN')}</span>
+                  <span className="text-base text-emerald-500 font-extrabold">₹{formatPrice(grandTotal)}</span>
                 </div>
               </div>
             </div>
@@ -1496,7 +1618,7 @@ export const Checkout = () => {
               </div>
               <div className="flex justify-between">
                 <span className="text-slate-400">{t('checkout_page.total_paid')}</span>
-                <span className="font-bold text-slate-850 dark:text-slate-50">₹{successOrder.total_amount.toLocaleString('en-IN')}</span>
+                <span className="font-bold text-slate-850 dark:text-slate-55">₹{formatPrice(successOrder.total_amount)}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-slate-400">{t('checkout_page.est_delivery')}</span>
@@ -1513,7 +1635,7 @@ export const Checkout = () => {
             <div className="mt-8 flex gap-4">
               <button
                 onClick={() => navigate('/')}
-                className="flex-1 py-3 bg-slate-100 hover:bg-slate-200 dark:bg-slate-855 dark:hover:bg-slate-800 text-slate-800 dark:text-slate-200 rounded-xl text-xs font-bold transition-colors"
+                className="btn-secondary-white flex-1 py-3 rounded-xl text-xs transition-colors"
               >
                 {t('cart_page.continue_shopping')}
               </button>
@@ -1595,7 +1717,7 @@ export const Checkout = () => {
                     setShowTermsModal(false);
                     setCheckboxChecked(false);
                   }}
-                  className="flex-1 py-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-850 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 rounded-xl font-bold transition-all text-xs"
+                  className="btn-secondary-white flex-1 py-2.5 rounded-xl transition-all text-xs"
                 >
                   {t('checkout_page.cancel')}
                 </button>

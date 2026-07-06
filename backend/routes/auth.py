@@ -773,6 +773,7 @@ def checkout_login_route():
             addr.city = address.get("city", "")
             addr.state = address.get("state", "")
             addr.pincode = address.get("pincode", "")
+            addr.country = address.get("country", "India") or "India"
             addr.address_type = address.get("address_type", "Home")
         db.session.add(addr)
         
@@ -958,13 +959,19 @@ def add_address(current_user):
         is_default = data.get("is_default", False)
         alternate_mobile_number = data.get("alternate_mobile_number")
         
+        country = data.get("country")
+        if country is None:
+            country = "India"
+        else:
+            country = country.strip()
+        
         if alternate_mobile_number:
             # Validate only if provided (not empty)
             if not alternate_mobile_number.isdigit() or len(alternate_mobile_number) != 10:
                 return jsonify({"message": "Alternate Mobile Number must be exactly 10 digits and numeric only."}), 400
                 
-        if not all([house_number, street, area, landmark, city, state, pincode]):
-            return jsonify({"message": "All address fields (House Number, Street, Area, Landmark, City, State, Pincode) are required."}), 400
+        if not all([house_number, street, area, landmark, city, state, pincode, country]):
+            return jsonify({"message": "All address fields (House Number, Street, Area, Landmark, City, State, Pincode, Country) are required."}), 400
             
         # If this is the user's first address, make it default regardless
         if not user_obj.addresses:
@@ -984,6 +991,7 @@ def add_address(current_user):
             city=city,
             state=state,
             pincode=pincode,
+            country=country,
             address_type=address_type,
             is_default=is_default,
             alternate_mobile_number=alternate_mobile_number if alternate_mobile_number else None
@@ -1022,13 +1030,19 @@ def update_address(current_user, address_id):
         is_default = data.get("is_default", addr.is_default)
         alternate_mobile_number = data.get("alternate_mobile_number")
         
+        country = data.get("country")
+        if country is None:
+            country = addr.country or "India"
+        else:
+            country = country.strip()
+        
         if alternate_mobile_number:
             # Validate only if provided (not empty)
             if not alternate_mobile_number.isdigit() or len(alternate_mobile_number) != 10:
                 return jsonify({"message": "Alternate Mobile Number must be exactly 10 digits and numeric only."}), 400
                 
-        if not all([house_number, street, area, landmark, city, state, pincode]):
-            return jsonify({"message": "All address fields (House Number, Street, Area, Landmark, City, State, Pincode) are required."}), 400
+        if not all([house_number, street, area, landmark, city, state, pincode, country]):
+            return jsonify({"message": "All address fields (House Number, Street, Area, Landmark, City, State, Pincode, Country) are required."}), 400
             
         if is_default and not addr.is_default:
             for a in user_obj.addresses:
@@ -1042,6 +1056,7 @@ def update_address(current_user, address_id):
         addr.city = city
         addr.state = state
         addr.pincode = pincode
+        addr.country = country
         addr.address_type = address_type
         addr.is_default = is_default
         addr.alternate_mobile_number = alternate_mobile_number if alternate_mobile_number else None

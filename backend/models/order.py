@@ -67,6 +67,7 @@ class OrderModel(db.Model):
             "_id": str(self.id),
             "order_id": self.order_id,
             "user_id": str(self.user_id) if self.user_id else None,
+            "user_email": self.user.email if (self.user and self.user.email) else "Not Available",
             "shipping_address": self.shipping_address or {},
             "items": item_list,
             "total_amount": float(self.total_amount),
@@ -168,7 +169,8 @@ class OrderModel(db.Model):
     @staticmethod
     def find_all():
         try:
-            orders = OrderModel.query.order_by(OrderModel.created_at.desc()).all()
+            from backend.models.user import UserModel
+            orders = OrderModel.query.outerjoin(UserModel, OrderModel.user_id == UserModel.id).order_by(OrderModel.created_at.desc()).all()
             return [o.to_dict() for o in orders]
         except Exception:
             return []

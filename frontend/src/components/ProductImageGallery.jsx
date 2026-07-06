@@ -122,7 +122,7 @@ export const ProductImageGallery = ({ images = [], productName = 'Product' }) =>
 
       {/* 2. MAIN DISPLAY PORT WITH ZOOM HOVER */}
       {/* Removed overflow-hidden to allow zoom panel to appear outside */}
-      <div className="relative flex-grow aspect-square md:aspect-[4/5] bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800 rounded-3xl shadow-sm flex items-center justify-center group z-10 hover:z-20">
+      <div className="relative flex-grow w-full h-auto min-h-[250px] sm:min-h-[300px] md:min-h-[350px] lg:min-h-[400px] bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800 rounded-3xl shadow-sm flex items-center justify-center group z-10 hover:z-20 p-5">
         
         {/* Placeholder / Loading State */}
         {!imageLoaded && !imageError && (
@@ -160,7 +160,7 @@ export const ProductImageGallery = ({ images = [], productName = 'Product' }) =>
           onTouchStart={handleTouchStart}
           onTouchEnd={handleTouchEnd}
           onClick={() => setIsFullscreenOpen(true)}
-          className="relative w-full h-full flex items-center justify-center cursor-zoom-in"
+          className="relative w-full h-auto flex items-center justify-center cursor-zoom-in"
         >
           <img
             ref={imgRef}
@@ -169,7 +169,7 @@ export const ProductImageGallery = ({ images = [], productName = 'Product' }) =>
             loading="lazy"
             onLoad={() => setImageLoaded(true)}
             onError={() => setImageError(true)}
-            className={`max-w-full max-h-full object-contain p-4 transition-all duration-300 select-none pointer-events-none ${
+            className={`w-full h-auto object-contain transition-all duration-300 select-none pointer-events-none ${
               imageLoaded ? 'opacity-100 scale-100' : 'opacity-0 scale-95'
             }`}
           />

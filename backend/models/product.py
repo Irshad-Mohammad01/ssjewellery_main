@@ -722,6 +722,47 @@ class BuyRequestModel(db.Model):
             except Exception:
                 pass
 
+        address_str = ""
+        state_str = ""
+        if self.selected_address_id:
+            try:
+                from backend.models.user import DeliveryAddress
+                addr_obj = DeliveryAddress.query.get(self.selected_address_id)
+                if addr_obj:
+                    parts = [
+                        addr_obj.house_number,
+                        addr_obj.building_name,
+                        addr_obj.street,
+                        addr_obj.area,
+                        addr_obj.landmark,
+                        addr_obj.city,
+                        addr_obj.state,
+                        addr_obj.pincode
+                    ]
+                    address_str = ", ".join([p.strip() for p in parts if p and p.strip()])
+                    state_str = addr_obj.state or ""
+            except Exception:
+                pass
+
+        if not address_str and self.user:
+            try:
+                addr_obj = self.user.address
+                if addr_obj:
+                    parts = [
+                        addr_obj.house_number,
+                        addr_obj.building_name,
+                        addr_obj.street,
+                        addr_obj.area,
+                        addr_obj.landmark,
+                        addr_obj.city,
+                        addr_obj.state,
+                        addr_obj.pincode
+                    ]
+                    address_str = ", ".join([p.strip() for p in parts if p and p.strip()])
+                    state_str = addr_obj.state or ""
+            except Exception:
+                pass
+
         return {
             "id": self.id,
             "product_id": self.product_id,
@@ -740,6 +781,8 @@ class BuyRequestModel(db.Model):
             "created_time": created_time,
             "created_at": format_iso_datetime(self.created_at) if self.created_at else None,
             "city": self.city or "",
+            "state": state_str,
+            "address": address_str,
             "customer_confirmed": bool(self.customer_confirmed),
             "selected_address_id": self.selected_address_id,
             "payment_completed": bool(self.payment_completed),

@@ -22,9 +22,9 @@ if key_env:
         except Exception:
             ENCRYPTION_KEY = hashlib.sha256(key_env.encode('utf-8')).digest()
 else:
-    # Fallback to deriving from JWT_SECRET or standard static key
-    jwt_secret = os.getenv("JWT_SECRET", "supersecret_SSJewellery_key_123")
-    ENCRYPTION_KEY = hashlib.sha256(jwt_secret.encode('utf-8')).digest()
+    # Use standard static key for SSJewellery database encryption
+    db_secret = "supersecret_SSJewellery_key_123"
+    ENCRYPTION_KEY = hashlib.sha256(db_secret.encode('utf-8')).digest()
 
 def get_deterministic_iv(plain_text):
     """Derive a 16-byte IV deterministically from the plaintext."""
@@ -151,6 +151,14 @@ def mask_pincode(pincode):
         return p[:2] + "*" * (len(p) - 2)
     return "**" * len(p)
 
+def encryptSensitiveData(plain_text):
+    """Encrypt plain_text using central security configuration."""
+    return encrypt(plain_text)
+
+def decryptSensitiveData(cipher_text):
+    """Decrypt cipher_text using central security configuration."""
+    return decrypt(cipher_text)
+
 class EncryptedString(TypeDecorator):
     """SQLAlchemy TypeDecorator for automatically encrypting/decrypting String columns."""
     impl = String
@@ -159,12 +167,12 @@ class EncryptedString(TypeDecorator):
     def process_bind_param(self, value, dialect):
         if value is None:
             return None
-        return encrypt(value)
+        return encryptSensitiveData(value)
         
     def process_result_value(self, value, dialect):
         if value is None:
             return None
-        return decrypt(value)
+        return decryptSensitiveData(value)
 
 class EncryptedJSON(TypeDecorator):
     """SQLAlchemy TypeDecorator for automatically encrypting/decrypting JSON columns."""
@@ -175,14 +183,14 @@ class EncryptedJSON(TypeDecorator):
         if value is None:
             return None
         serialized = json.dumps(value)
-        encrypted_str = encrypt(serialized)
+        encrypted_str = encryptSensitiveData(serialized)
         return {"encrypted_data": encrypted_str}
         
     def process_result_value(self, value, dialect):
         if value is None:
             return None
         if isinstance(value, dict) and "encrypted_data" in value:
-            decrypted_str = decrypt(value["encrypted_data"])
+            decrypted_str = decryptSensitiveData(value["encrypted_data"])
             try:
                 return json.loads(decrypted_str)
             except Exception:

@@ -9,6 +9,7 @@ import {
 import { AuthContext, API_BASE_URL } from '../context/AuthContext';
 import { CartContext } from '../context/CartContext';
 import { useTranslation } from '../hooks/useTranslation';
+import { formatPrice } from '../utils/priceFormatter';
 
 const formatTimestamp = (dateInput) => {
   if (!dateInput) return '';
@@ -218,8 +219,8 @@ export const MyOrders = () => {
       <tr>
         <td style="padding: 12px 10px; border-bottom: 1px solid #e2e8f0; text-align: left; font-size: 13px;">${item.name}</td>
         <td style="padding: 12px 10px; border-bottom: 1px solid #e2e8f0; text-align: center; font-size: 13px;">${item.quantity}</td>
-        <td style="padding: 12px 10px; border-bottom: 1px solid #e2e8f0; text-align: right; font-size: 13px;">₹${parseFloat(item.price).toFixed(2)}</td>
-        <td style="padding: 12px 10px; border-bottom: 1px solid #e2e8f0; text-align: right; font-size: 13px; font-weight: bold;">₹${(parseFloat(item.price) * item.quantity).toFixed(2)}</td>
+        <td style="padding: 12px 10px; border-bottom: 1px solid #e2e8f0; text-align: right; font-size: 13px;">₹${formatPrice(item.price)}</td>
+        <td style="padding: 12px 10px; border-bottom: 1px solid #e2e8f0; text-align: right; font-size: 13px; font-weight: bold;">₹${formatPrice(item.price * item.quantity)}</td>
       </tr>
     `).join('');
 
@@ -279,7 +280,7 @@ export const MyOrders = () => {
             </table>
             <div class="totals">
               <div>Payment Mode: COD</div>
-              <div>Amount Due: ₹${parseFloat(order.total_amount).toFixed(2)}</div>
+              <div>Amount Due: ₹${formatPrice(order.total_amount)}</div>
             </div>
           </div>
           <script>window.onload = function() { window.print(); }</script>
@@ -491,7 +492,7 @@ export const MyOrders = () => {
                             <div className="flex items-center gap-3 w-full sm:w-auto justify-between sm:justify-end">
                               <div className="text-right sm:mr-4">
                                 <p className="text-[9px] text-slate-400 uppercase tracking-wider font-bold">{t('my_orders.subtotal')}</p>
-                                <p className="text-sm font-extrabold text-slate-850 dark:text-white">₹{order.total_amount.toLocaleString('en-IN')}</p>
+                                 <p className="text-sm font-extrabold text-slate-855 dark:text-white">₹{formatPrice(order.total_amount)}</p>
                               </div>
                               <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${getStatusStyle(order.status)}`}>
                                 {t(`my_orders.status.${order.status}`)}
@@ -605,10 +606,10 @@ export const MyOrders = () => {
                                       <img src={item.image} alt="" className="h-8 w-8 rounded object-cover flex-shrink-0" />
                                       <div className="min-w-0">
                                         <p className="font-bold text-slate-800 dark:text-slate-200 truncate">{item.name}</p>
-                                        <p className="text-[10px] text-slate-400">{t('my_orders.qty')}: {item.quantity} • {t('my_orders.rate')}: ₹{item.price.toLocaleString('en-IN')}</p>
+                                        <p className="text-[10px] text-slate-400">{t('my_orders.qty')}: {item.quantity} • {t('my_orders.rate')}: ₹{formatPrice(item.price)}</p>
                                       </div>
                                     </div>
-                                    <span className="font-extrabold text-slate-900 dark:text-white">₹{(item.price * item.quantity).toLocaleString('en-IN')}</span>
+                                    <span className="font-extrabold text-slate-900 dark:text-white">₹{formatPrice(item.price * item.quantity)}</span>
                                   </div>
                                 ))}
                               </div>
@@ -676,13 +677,13 @@ export const MyOrders = () => {
                       let badgeClass = '';
                       let statusText = req.status;
                       if (req.status === 'Pending') {
-                        badgeClass = 'bg-amber-100 text-amber-700 border-amber-200 dark:bg-amber-950/20 dark:text-amber-400 dark:border-amber-900/30';
+                        badgeClass = 'bg-amber-100 text-amber-700 border-amber-200 dark:bg-amber-955/20 dark:text-amber-400 dark:border-amber-900/30';
                         statusText = language === 'hi' ? 'लंबित' : 'Pending';
                       } else if (req.status === 'Approved') {
                         badgeClass = 'bg-[#D4A75F]/10 text-[#D4A75F] border-[#D4A75F]/20 dark:bg-[#D4A75F]/20 dark:text-[#D4A75F] dark:border-[#D4A75F]/45/30 animate-pulse';
                         statusText = language === 'hi' ? 'स्वीकृत - पुष्टि आवश्यक' : 'Approved - Confirmation Required';
                       } else if (req.status === 'Awaiting Payment') {
-                        badgeClass = 'bg-rose-100 text-rose-700 border-rose-200 dark:bg-rose-950/20 dark:text-rose-400 dark:border-rose-900/30 animate-pulse';
+                        badgeClass = 'bg-rose-100 text-rose-700 border-rose-200 dark:bg-rose-955/20 dark:text-rose-400 dark:border-rose-900/30 animate-pulse';
                         statusText = language === 'hi' ? 'भुगतान लंबित' : 'Payment Pending';
                       } else if (req.status === 'Converted To Order') {
                         badgeClass = 'bg-slate-100 text-slate-700 border-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:border-slate-700';
@@ -691,8 +692,8 @@ export const MyOrders = () => {
                         badgeClass = 'bg-rose-100 text-rose-700 border-rose-200 dark:bg-rose-950/20 dark:text-rose-400 dark:border-rose-900/30';
                         statusText = language === 'hi' ? 'अस्वीकृत' : 'Rejected';
                       } else if (req.status === 'Confirmed') {
-                        badgeClass = 'bg-blue-100 text-blue-700 border-blue-200 dark:bg-blue-950/20 dark:text-blue-400 dark:border-blue-900/30';
-                        statusText = language === 'hi' ? 'पुष्टि की गई' : 'Confirmed';
+                        badgeClass = 'bg-blue-100 text-blue-700 border-blue-200 dark:bg-blue-955/20 dark:text-blue-400 dark:border-blue-900/30';
+                        statusText = language === 'hi' ? 'उत्पाद की प्रतीक्षा' : 'Waiting for Product';
                       } else if (req.status === 'Order Preparation') {
                         badgeClass = 'bg-indigo-100 text-indigo-700 border-indigo-200 dark:bg-indigo-950/20 dark:text-indigo-405 dark:border-indigo-900/30';
                         statusText = language === 'hi' ? 'ऑर्डर की तैयारी...' : 'Order Preparation...';
@@ -725,7 +726,12 @@ export const MyOrders = () => {
                           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 pb-3 border-b border-slate-100 dark:border-slate-800/50">
                             <div>
                               <span className="text-[10px] text-slate-400 dark:text-slate-500 font-bold font-mono">{language === 'hi' ? 'अनुरोध' : 'REQUEST'} #{req.id}</span>
-                              <h4 className="text-sm font-extrabold text-slate-800 dark:text-slate-100 mt-0.5">{req.product_name}</h4>
+                              <h4 className="text-sm font-extrabold text-slate-800 dark:text-slate-105 mt-0.5">{req.product_name}</h4>
+                              {req.status === 'Confirmed' && (
+                                <div className="text-[11px] text-blue-600 dark:text-blue-400 font-extrabold mt-1 flex items-center gap-1">
+                                  <span>✔</span> {language === 'hi' ? 'एडमिन द्वारा पुष्टि की गई' : 'Confirmed by Admin'}
+                                </div>
+                              )}
                             </div>
                             <span className={`text-[10px] font-black uppercase px-2.5 py-1 rounded-full border ${badgeClass}`}>
                               {statusText}
@@ -757,18 +763,18 @@ export const MyOrders = () => {
                               {req.expected_delivery_date && (
                                 <div className="flex justify-between">
                                   <span className="text-slate-400">{language === 'hi' ? 'अपेक्षित डिलीवरी तिथि' : 'Expected Delivery Date'}</span>
-                                  <span className="font-bold text-slate-800 dark:text-slate-205">{req.expected_delivery_date}</span>
+                                  <span className="font-bold text-slate-805 dark:text-slate-205">{req.expected_delivery_date}</span>
                                 </div>
                               )}
                               {req.expected_availability_date && (
                                 <div className="flex justify-between">
                                   <span className="text-slate-400">{language === 'hi' ? 'अपेक्षित उपलब्धता तिथि' : 'Expected Availability Date'}</span>
-                                  <span className="font-bold text-slate-800 dark:text-slate-205">{req.expected_availability_date}</span>
+                                  <span className="font-bold text-slate-805 dark:text-slate-205">{req.expected_availability_date}</span>
                                 </div>
                               )}
                               {req.admin_note && (
                                 <div className="pt-2 border-t border-slate-100 dark:border-slate-900/60 mt-1">
-                                  <span className="text-slate-400 block mb-0.5">{language === 'hi' ? 'एडमिन नोट' : 'Admin Note'}</span>
+                                  <span className="text-slate-400 block mb-0.5">{language === 'hi' ? 'एडमिन संदेश' : 'Admin Message'}</span>
                                   <p className="text-slate-700 dark:text-slate-300 italic font-medium">{req.admin_note}</p>
                                 </div>
                               )}
@@ -869,10 +875,10 @@ export const MyOrders = () => {
                                 <Link to={`/product/${item._id || item.product_id}`}>{item.name}</Link>
                               </h4>
                               <div className="flex items-center space-x-1.5 mt-1">
-                                <span className="text-xs font-black text-slate-900 dark:text-white">₹{Math.round(finalPrice).toLocaleString('en-IN')}</span>
+                                <span className="text-xs font-black text-slate-900 dark:text-white">₹{formatPrice(finalPrice)}</span>
                                 {item.discount > 0 && (
                                   <>
-                                    <span className="text-[10px] text-slate-400 line-through">₹{item.price.toLocaleString('en-IN')}</span>
+                                    <span className="text-[10px] text-slate-400 line-through">₹{formatPrice(item.price)}</span>
                                     <span className="text-[9px] font-bold text-[#D4A75F] bg-[#D4A75F]/10/50 dark:bg-emerald-950/40 px-1 rounded">{item.discount}% {t('home.off')}</span>
                                   </>
                                 )}
@@ -931,7 +937,7 @@ export const MyOrders = () => {
                               <Link to={`/product/${item.product_id}`}>{item.name}</Link>
                             </h4>
                             <div className="flex items-center space-x-1.5 mt-1">
-                              <span className="text-xs font-black text-slate-900 dark:text-white">₹{item.price.toLocaleString('en-IN')}</span>
+                              <span className="text-xs font-black text-slate-900 dark:text-white">₹{formatPrice(item.price)}</span>
                             </div>
                           </div>
 

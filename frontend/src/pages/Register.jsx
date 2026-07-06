@@ -423,7 +423,7 @@ export const Register = () => {
                 <button
                   type="button"
                   onClick={() => setOtpSent(false)}
-                  className="flex-1 py-3 bg-slate-100 hover:bg-slate-200 dark:bg-slate-850 dark:hover:bg-slate-800 text-slate-800 dark:text-slate-200 rounded-xl text-sm font-bold shadow-sm flex items-center justify-center gap-1.5 cursor-pointer"
+                  className="btn-secondary-white flex-1 py-3 rounded-xl text-sm shadow-sm flex items-center justify-center gap-1.5 cursor-pointer transition-all"
                 >
                   <ArrowLeft className="h-4 w-4" />
                   <span>Edit Details</span>

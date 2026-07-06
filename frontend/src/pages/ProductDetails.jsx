@@ -45,6 +45,9 @@ import { CartContext } from '../context/CartContext';
 import { AuthContext, API_BASE_URL } from '../context/AuthContext';
 import { ProductImageGallery } from '../components/ProductImageGallery';
 import { LuxuryImage } from '../components/LuxuryImage';
+import { formatPrice } from '../utils/priceFormatter';
+import { translateCategory as centralizedTranslateCategory } from '../utils/categoryTranslations';
+
 
 const ReviewsSkeleton = () => (
   <div className="divide-y divide-slate-100 dark:divide-slate-800 space-y-4 w-full">
@@ -180,18 +183,7 @@ export const ProductDetails = ({ productId }) => {
   };
 
   const translateCategory = (cat) => {
-    if (language !== 'hi') return cat;
-    const dict = {
-      'grocery': 'किराना',
-      'electronics': 'इलेक्ट्रॉनिक्स',
-      'fashion': 'फैशन',
-      'books': 'पुस्तकें',
-      'home_kitchen': 'घर और रसोई',
-      'home': 'होम',
-      'kitchen': 'रसोई'
-    };
-    const key = (cat || '').toLowerCase();
-    return dict[key] || cat;
+    return centralizedTranslateCategory(cat, language);
   };
 
   const [product, setProduct] = useState(null);
@@ -495,11 +487,11 @@ export const ProductDetails = ({ productId }) => {
           {/* Price Row */}
           <div className="flex items-baseline space-x-1.5 mb-1 mt-auto font-black text-slate-900 dark:text-slate-100">
             <span className="text-sm sm:text-base font-extrabold text-[#3F1D5A] dark:text-[#EFE7DB]">
-              ₹{itemDiscountedPrice.toLocaleString('en-IN')}
+              ₹{formatPrice(itemDiscountedPrice)}
             </span>
             {item.discount > 0 && (
               <span className="text-[10px] sm:text-xs text-slate-400 line-through font-normal">
-                ₹{item.price.toLocaleString('en-IN')}
+                ₹{formatPrice(item.price)}
               </span>
             )}
           </div>
@@ -1323,7 +1315,7 @@ export const ProductDetails = ({ productId }) => {
               <div key={idx} className="flex-1 flex flex-col items-center group relative">
                 {/* Tooltip */}
                 <div className="absolute bottom-full mb-2 hidden group-hover:block bg-slate-950 text-white text-[10px] py-1 px-2 rounded shadow-lg pointer-events-none whitespace-nowrap z-10 font-mono">
-                  ₹{day.revenue.toFixed(2)}
+                  ₹{formatPrice(day.revenue)}
                 </div>
                 {/* Bar */}
                 <div 
@@ -1341,7 +1333,19 @@ export const ProductDetails = ({ productId }) => {
         <div className="h-6" />
       </div>
     );
-  };  return (
+  };
+
+  const catLower = (product?.category || '').toLowerCase();
+  const isRing = catLower.includes('ring') && !catLower.includes('earring');
+  const isEarring = catLower.includes('earring');
+  const isNecklace = catLower.includes('necklace') || catLower.includes('choker');
+  const isBracelet = catLower.includes('bracelet');
+  const isBangle = catLower.includes('bangle');
+  const isChain = catLower.includes('chain');
+  const isBridal = catLower.includes('bridal');
+  const isJewelry = isRing || isEarring || isNecklace || isBracelet || isBangle || isChain || isBridal || getCategoryType(product?.category) === 'jewelry';
+
+  return (
     <div className={productId ? "bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 font-sans" : "bg-slate-55 dark:bg-slate-950 text-slate-800 dark:text-slate-100 min-h-screen pb-6 font-sans"}>
       
       {/* Header Bar */}
@@ -1358,44 +1362,103 @@ export const ProductDetails = ({ productId }) => {
                 <h1 className="text-lg md:text-xl font-black text-slate-800 dark:text-slate-100 leading-tight">
                   {language === 'hi' ? (product.name_hi || product.name) : (product.name_en || product.name)}
                 </h1>
-                <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold border whitespace-nowrap ${product.stock > 0 ? 'bg-emerald-50 text-emerald-600 border-emerald-200' : 'bg-rose-50 text-rose-600 border-rose-200'}`}>
-                  {product.stock > 0 ? (language === 'hi' ? 'सक्रिय' : 'ACTIVE') : (language === 'hi' ? 'आउट ऑफ स्टॉक' : 'OUT OF STOCK')}
-                </span>
+                {((isAdmin && !isPreviewMode) || product.stock <= 0) && (
+                  <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold border whitespace-nowrap ${product.stock > 0 ? 'bg-emerald-50 text-emerald-600 border-emerald-200' : 'bg-rose-50 text-rose-600 border-rose-200'}`}>
+                    {product.stock > 0 ? (language === 'hi' ? 'सक्रिय' : 'ACTIVE') : (language === 'hi' ? 'आउट ऑफ स्टॉक' : 'OUT OF STOCK')}
+                  </span>
+                )}
               </div>
             </div>
             
-            {isAdmin && (
-              <div className="flex items-center gap-2 w-full md:w-auto justify-end sm:justify-start">
-                {!isPreviewMode ? (
-                  <>
+                        {isAdmin && (
+              <div className="flex items-center gap-2">
+                {/* Desktop and Tablet Action Buttons (>768px) */}
+                <div className="hidden md:flex items-center gap-2">
+                  {!isPreviewMode ? (
+                    <>
+                      <button 
+                        onClick={() => setIsPreviewMode(true)} 
+                        className="px-3 py-1.5 text-xs font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors flex items-center gap-1.5 border border-slate-200 shadow-sm cursor-pointer whitespace-nowrap"
+                      >
+                        <Eye className="h-3.5 w-3.5" />
+                        View Product
+                      </button>
+                      <button 
+                        onClick={handleSaveDetails} 
+                        disabled={savingDetails} 
+                        className="px-4 py-1.5 text-xs font-bold text-white bg-emerald-500 hover:bg-emerald-600 rounded-lg transition-colors flex items-center gap-1.5 shadow-sm cursor-pointer whitespace-nowrap"
+                      >
+                        <Edit2 className="h-3.5 w-3.5" />
+                        {savingDetails ? 'Saving...' : 'Save Changes'}
+                      </button>
+                    </>
+                  ) : (
                     <button 
-                      onClick={() => setIsPreviewMode(true)} 
-                      className="flex-1 sm:flex-none px-3 py-1.5 text-xs font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors flex items-center justify-center gap-1.5 border border-slate-200 shadow-sm cursor-pointer whitespace-nowrap"
-                    >
-                      <Eye className="h-3.5 w-3.5" />
-                      View Product
-                    </button>
-                    <button 
-                      onClick={handleSaveDetails} 
-                      disabled={savingDetails} 
-                      className="flex-1 sm:flex-none px-4 py-1.5 text-xs font-bold text-white bg-emerald-500 hover:bg-emerald-600 rounded-lg transition-colors flex items-center justify-center gap-1.5 shadow-sm cursor-pointer whitespace-nowrap"
+                      onClick={() => setIsPreviewMode(false)} 
+                      className="px-4 py-1.5 text-xs font-bold text-white bg-emerald-500 hover:bg-emerald-600 rounded-lg transition-colors flex items-center gap-1.5 shadow-sm cursor-pointer"
                     >
                       <Edit2 className="h-3.5 w-3.5" />
-                      {savingDetails ? 'Saving...' : 'Save Changes'}
+                      Edit Product
                     </button>
-                  </>
-                ) : (
-                  <button 
-                    onClick={() => setIsPreviewMode(false)} 
-                    className="w-full sm:w-auto px-4 py-1.5 text-xs font-bold text-white bg-emerald-500 hover:bg-emerald-600 rounded-lg transition-colors flex items-center justify-center gap-1.5 shadow-sm cursor-pointer"
-                  >
-                    <Edit2 className="h-3.5 w-3.5" />
-                    Edit Product
-                  </button>
-                )}
+                  )}
+                </div>
+
+                {/* Mobile Action Buttons (<=768px) */}
+                <div className="flex md:hidden items-center gap-2.5">
+                  {!isPreviewMode ? (
+                    <>
+                      {/* View Product Icon Button */}
+                      <div className="relative group">
+                        <button 
+                          onClick={() => setIsPreviewMode(true)} 
+                          title={language === 'hi' ? 'उत्पाद देखें' : 'View Product'}
+                          className="w-10 h-10 rounded-full border-2 border-emerald-500 bg-white dark:bg-slate-900 text-emerald-500 hover:border-[#D4A75F] hover:text-[#D4A75F] active:border-[#D4A75F] active:text-[#D4A75F] flex items-center justify-center shadow-sm transition-all cursor-pointer"
+                        >
+                          <Eye className="h-4.5 w-4.5" />
+                        </button>
+                        <span className="pointer-events-none absolute -bottom-8 left-1/2 -translate-x-1/2 whitespace-nowrap rounded bg-slate-900 px-2 py-1 text-[10px] font-bold text-white opacity-0 transition-opacity group-hover:opacity-100 group-focus:opacity-100 z-50 shadow-sm">
+                          {language === 'hi' ? 'उत्पाद देखें' : 'View Product'}
+                        </span>
+                      </div>
+                      
+                      {/* Save Changes Icon Button */}
+                      <div className="relative group">
+                        <button 
+                          onClick={handleSaveDetails} 
+                          disabled={savingDetails} 
+                          title={language === 'hi' ? 'बदलाव सहेजें' : 'Save Changes'}
+                          className={`w-10 h-10 rounded-full border-2 border-emerald-500 bg-white dark:bg-slate-900 text-emerald-500 hover:border-[#D4A75F] hover:text-[#D4A75F] active:border-[#D4A75F] active:text-[#D4A75F] flex items-center justify-center shadow-sm transition-all cursor-pointer ${savingDetails ? 'opacity-50 cursor-not-allowed' : ''}`}
+                        >
+                          {savingDetails ? (
+                            <RefreshCw className="h-4 w-4 animate-spin" />
+                          ) : (
+                            <Edit2 className="h-4 w-4" />
+                          )}
+                        </button>
+                        <span className="pointer-events-none absolute -bottom-8 left-1/2 -translate-x-1/2 whitespace-nowrap rounded bg-slate-900 px-2 py-1 text-[10px] font-bold text-white opacity-0 transition-opacity group-hover:opacity-100 group-focus:opacity-100 z-50 shadow-sm">
+                          {language === 'hi' ? 'बदलाव सहेजें' : 'Save Changes'}
+                        </span>
+                      </div>
+                    </>
+                  ) : (
+                    /* Edit Product Icon Button */
+                    <div className="relative group">
+                      <button 
+                        onClick={() => setIsPreviewMode(false)} 
+                        title={language === 'hi' ? 'उत्पाद संपादित करें' : 'Edit Product'}
+                        className="w-10 h-10 rounded-full border-2 border-emerald-500 bg-white dark:bg-slate-900 text-emerald-500 hover:border-[#D4A75F] hover:text-[#D4A75F] active:border-[#D4A75F] active:text-[#D4A75F] flex items-center justify-center shadow-sm transition-all cursor-pointer"
+                      >
+                        <Edit2 className="h-4 w-4" />
+                      </button>
+                      <span className="pointer-events-none absolute -bottom-8 left-1/2 -translate-x-1/2 whitespace-nowrap rounded bg-slate-900 px-2 py-1 text-[10px] font-bold text-white opacity-0 transition-opacity group-hover:opacity-100 group-focus:opacity-100 z-50 shadow-sm">
+                        {language === 'hi' ? 'उत्पाद संपादित करें' : 'Edit Product'}
+                      </span>
+                    </div>
+                  )}
+                </div>
               </div>
             )}
-          </div>
+                              </div>
         </div>
       )}
 
@@ -1417,10 +1480,73 @@ export const ProductDetails = ({ productId }) => {
                
                {/* Left Column (45%) */}
                <div className="flex flex-col space-y-6">
-                 
+                 {/* Mobile Header Block (Apply ONLY on Mobile <=768px) */}
+                 <div className="block md:hidden w-full px-1">
+                   {/* Breadcrumb */}
+                   <div className="flex items-center text-xs text-slate-500 dark:text-slate-400 font-medium mb-4">
+                     <span className="cursor-pointer hover:text-emerald-500" onClick={() => navigate('/admin')}>{language === 'hi' ? 'उत्पाद' : 'Products'}</span>
+                     <ChevronRight className="h-3 w-3 mx-1 text-slate-400" />
+                     <span className="text-slate-700 dark:text-slate-330 font-bold">{language === 'hi' ? 'उत्पाद विवरण' : 'Product Details'}</span>
+                   </div>
+
+
+                    {/* Product Name (Full Width) */}
+                    <div className="mb-[8px]">
+                      <h1 className="text-[22px] font-bold text-slate-800 dark:text-slate-100 leading-[1.3]">
+                        {language === 'hi' ? (product.name_hi || product.name) : (product.name_en || product.name)}
+                      </h1>
+                    </div>
+
+                    {/* Action & Status Row (Icons on left, badge on right) */}
+                    <div className="flex items-center justify-between mb-[12px]">
+                      {/* Left: Compact Action Icons */}
+                      <div className="flex items-center gap-[10px]">
+                        {!isPreviewMode ? (
+                          <>
+                            {/* View Product (Eye) Icon Button */}
+                            <button 
+                              onClick={() => setIsPreviewMode(true)} 
+                              title={language === 'hi' ? 'उत्पाद देखें' : 'View Product'}
+                              className="w-[44px] h-[44px] flex items-center justify-center text-[#5B1E7A] hover:opacity-80 active:scale-95 transition-all cursor-pointer bg-transparent border-0 p-0 outline-none"
+                            >
+                              <Eye className="h-[18px] w-[18px]" />
+                            </button>
+                            
+                            {/* Save Changes Premium Button */}
+                            <button 
+                              onClick={handleSaveDetails} 
+                              disabled={savingDetails} 
+                              title={language === 'hi' ? 'बदलाव सहेजें' : 'Save Changes'}
+                              className={`h-[30px] px-[12px] rounded-[8px] bg-[#D4A75F] text-white text-[12px] font-semibold flex items-center justify-center gap-1.5 hover:brightness-95 active:scale-95 transition-all cursor-pointer border-0 outline-none shadow-sm ${savingDetails ? 'opacity-50 cursor-not-allowed' : ''}`}
+                            >
+                              {savingDetails ? (
+                                <RefreshCw className="h-[13px] w-[13px] animate-spin" />
+                              ) : null}
+                              <span>{language === 'hi' ? 'सहेजें' : 'Save'}</span>
+                            </button>
+                          </>
+                        ) : (
+                          /* Edit Product Premium Button */
+                          <button 
+                            onClick={() => setIsPreviewMode(false)} 
+                            title={language === 'hi' ? 'उत्पाद संपादित करें' : 'Edit Product'}
+                            className="h-[30px] px-[12px] rounded-[8px] bg-[#5B1E7A] text-white text-[12px] font-semibold flex items-center justify-center hover:brightness-95 active:scale-95 transition-all cursor-pointer border-0 outline-none shadow-sm"
+                          >
+                            <span>{language === 'hi' ? 'संपादित करें' : 'Edit'}</span>
+                          </button>
+                        )}
+                      </div>
+
+                      {/* Right: Active Status Badge */}
+                      <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${product.stock > 0 ? 'bg-emerald-50 text-emerald-600 border-emerald-200' : 'bg-rose-50 text-rose-600 border-rose-200'}`}>
+                        {product.stock > 0 ? (language === 'hi' ? 'सक्रिय' : 'ACTIVE') : (language === 'hi' ? 'आउट ऑफ स्टॉक' : 'OUT OF STOCK')}
+                      </span>
+                    </div>
+                  </div>
+
                  {/* Product Image Gallery & Media */}
-                 <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-sm flex flex-col relative overflow-hidden group">
-                    <div className="w-full relative bg-slate-50 dark:bg-slate-950 rounded-xl overflow-hidden mb-4 border border-slate-100 dark:border-slate-800">
+                 <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-sm flex flex-col relative overflow-hidden group !mt-[16px] md:!mt-0">
+                    <div className="w-full relative bg-slate-50 dark:bg-slate-955/60 rounded-xl overflow-hidden mb-4 border border-slate-100 dark:border-slate-800">
                       <div className="absolute top-4 left-4 z-10">
                         <span className={`px-2 py-1 rounded bg-white/90 backdrop-blur shadow text-[10px] font-black uppercase border ${product.stock > 0 ? 'text-emerald-600 border-emerald-100' : 'text-rose-600 border-rose-100'}`}>
                           {product.stock > 0 ? 'In Stock' : 'Out of Stock'}
@@ -1450,9 +1576,8 @@ export const ProductDetails = ({ productId }) => {
                         ) : 'Upload Media'}
                       </button>
                     </div>
+                  </div>
                  </div>
-
-               </div>
                
                {/* Right Column (55%) */}
                <div className="flex flex-col space-y-6">
@@ -1703,7 +1828,7 @@ export const ProductDetails = ({ productId }) => {
                   </div>
                   <div className="bg-indigo-50/50 dark:bg-indigo-900/10 p-4 rounded-xl border border-indigo-100 dark:border-indigo-800/50">
                     <span className="text-[10px] text-indigo-600 dark:text-[#4ADE80] font-bold uppercase tracking-wider block mb-1">Revenue Generated</span>
-                    <span className="text-xl font-black text-indigo-600 dark:text-[#4ADE80]">₹{(analyticsData?.sales_stats?.revenue_generated ?? salesData?.total_revenue ?? 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
+                    <span className="text-xl font-black text-indigo-600 dark:text-[#4ADE80]">₹{formatPrice(analyticsData?.sales_stats?.revenue_generated ?? salesData?.total_revenue ?? 0)}</span>
                   </div>
                   <div className="bg-emerald-50/50 dark:bg-[rgba(212,167,95,0.08)] p-4 rounded-xl border border-emerald-100 dark:border-[rgba(212,167,95,0.25)]">
                     <span className="text-[10px] text-emerald-600 dark:text-[#D4A75F] font-bold dark:font-semibold uppercase tracking-wider dark:tracking-[0.08em] block mb-1">CONVERSION RATE</span>
@@ -1901,9 +2026,9 @@ export const ProductDetails = ({ productId }) => {
             {/* LEFT COLUMN: Gallery & Trust Section */}
             <div className="col-span-1 md:col-span-6 lg:col-span-5 space-y-6 w-full">
               {/* Product Gallery Container */}
-              <div className="flex flex-col gap-4 items-start select-none w-full">
+              <div className="flex flex-col gap-3 md:gap-4 select-none w-full">
                 {/* Main Large Image Card with Zoom */}
-                <div className="w-full bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl p-4 relative group z-30 flex items-center justify-center">
+                <div className="w-full bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl p-4 md:p-5 relative group z-30 flex items-center justify-center">
                   <div 
                     className="relative w-full h-[480px] flex items-center justify-center overflow-hidden rounded-xl cursor-zoom-in"
                     onClick={(e) => {
@@ -1918,16 +2043,14 @@ export const ProductDetails = ({ productId }) => {
                     <LuxuryImage
                       src={activeImage || imagesList[0]}
                       alt={product.name}
-                      className="max-w-full max-h-full object-contain p-4 transition-transform duration-300 ease-out md:group-hover:scale-105 origin-[var(--zoom-x,50%)_var(--zoom-y,50%)]"
-                      width="480"
-                      height="480"
+                      className="w-full h-auto object-contain transition-transform duration-300 ease-out md:group-hover:scale-105 origin-[var(--zoom-x,50%)_var(--zoom-y,50%)]"
                     />
                   </div>
 
-                  {/* Side Zoom Window */}
+                  {/* Side Zoom Window (Only visible on medium viewports and above) */}
                   {isZooming && (
                     <div 
-                      className="absolute left-[103%] top-0 w-[120%] h-full min-w-[320px] max-w-[500px] bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-xl overflow-hidden z-40 hidden md:block pointer-events-none"
+                      className="absolute left-[103%] top-0 w-[120%] h-full min-w-[320px] max-w-[500px] bg-white dark:bg-slate-955 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-xl overflow-hidden z-40 hidden md:block pointer-events-none"
                       style={{
                         backgroundImage: `url(${activeImage || imagesList[0]})`,
                         backgroundPosition: `${zoomPos.x}% ${zoomPos.y}%`,
@@ -2494,27 +2617,117 @@ export const ProductDetails = ({ productId }) => {
                 </div>
 
                 {/* Product Summary section */}
-                <div className="bg-gradient-to-br from-slate-50 to-slate-100/50 dark:from-slate-950 dark:to-slate-900/50 p-4 rounded-2xl mb-4 border border-slate-200/60 dark:border-slate-800/80 flex gap-4 items-center">
+                <div className="bg-gradient-to-br from-slate-50 to-slate-100/50 dark:from-slate-950 dark:to-slate-900/50 p-4 rounded-2xl mb-4 border border-slate-200/60 dark:border-slate-800/80 flex flex-col md:flex-row gap-6 md:gap-8 items-center md:items-start overflow-hidden">
                   {product.images && product.images.length > 0 && (
-                    <LuxuryImage 
-                      src={product.images[0]} 
-                      alt={product.name} 
-                      className="w-20 h-20 object-cover rounded-xl border-2 border-[#D4A75F]/35 shadow-sm"
-                    />
+                    <div className="w-[140px] h-[140px] flex-shrink-0 overflow-hidden rounded-xl border-2 border-[#D4A75F]/35 shadow-sm">
+                      <LuxuryImage 
+                        src={product.images[0]} 
+                        alt={product.name} 
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
                   )}
-                  <div className="flex-1 min-w-0">
-                    <span className="inline-block px-2.5 py-0.5 rounded-full text-[9px] font-bold bg-[#D4A75F]/10 text-[#cda058] dark:text-[#E2B973] uppercase tracking-wider mb-1.5">
-                      {translateText(product.category)}
-                    </span>
-                    <h4 className="text-sm font-extrabold text-slate-800 dark:text-white line-clamp-1">
+                  <div className="flex-1 min-w-0 w-full overflow-hidden flex flex-col gap-2">
+                    <div>
+                      <span className="inline-block px-2.5 py-0.5 rounded-full text-[9px] font-bold bg-[#D4A75F]/10 text-[#cda058] dark:text-[#E2B973] uppercase tracking-wider mb-1.5 break-words">
+                        {translateText(product.category)}
+                      </span>
+                    </div>
+                    <h4 className="text-sm font-extrabold text-slate-800 dark:text-white break-words whitespace-pre-wrap leading-snug">
                       {language === 'hi' ? (product.name_hi || product.name) : (product.name_en || product.name)}
                     </h4>
-                    <div className="flex flex-wrap gap-x-3 gap-y-1 mt-1 text-[10px] font-medium text-slate-500 dark:text-slate-400">
-                      <span><strong>{translateText('Metal')}:</strong> {translateText(modalMetal)}</span>
-                      <span>•</span>
-                      <span><strong>{translateText('Purity')}:</strong> {modalPurity}</span>
-                      <span>•</span>
-                      <span><strong>{translateText('Gemstone')}:</strong> {translateText(modalGemstone)}</span>
+                    
+                    {/* Clean column layout for product details */}
+                    <div className="flex flex-col gap-1.5 mt-1 text-[11px] font-medium text-slate-500 dark:text-slate-400 overflow-hidden">
+                      {isJewelry ? (
+                        <>
+                          <div className="flex items-center gap-1.5 flex-wrap">
+                            <span className="text-slate-400 dark:text-slate-500 font-bold">{translateText('Metal')}:</span>
+                            <span className="text-slate-700 dark:text-slate-350 break-words">{translateText(modalMetal)}</span>
+                          </div>
+                          <div className="flex items-center gap-1.5 flex-wrap">
+                            <span className="text-slate-400 dark:text-slate-500 font-bold">{translateText('Purity')}:</span>
+                            <span className="text-slate-700 dark:text-slate-350 break-words">{modalPurity}</span>
+                          </div>
+                          <div className="flex items-center gap-1.5 flex-wrap">
+                            <span className="text-slate-400 dark:text-slate-500 font-bold">{translateText('Gemstone')}:</span>
+                            <span className="text-slate-700 dark:text-slate-350 break-words">{translateText(modalGemstone)}</span>
+                          </div>
+                          {isRing && modalRingSize && (
+                            <div className="flex items-center gap-1.5 flex-wrap">
+                              <span className="text-slate-400 dark:text-slate-500 font-bold">{translateText('Ring Size')}:</span>
+                              <span className="text-slate-700 dark:text-slate-350 break-words">{modalRingSize}</span>
+                            </div>
+                          )}
+                          {isNecklace && modalNecklaceLength && modalNecklaceLength !== 'None' && (
+                            <div className="flex items-center gap-1.5 flex-wrap">
+                              <span className="text-slate-400 dark:text-slate-500 font-bold">{translateText('Necklace Length')}:</span>
+                              <span className="text-slate-700 dark:text-slate-350 break-words">{modalNecklaceLength}</span>
+                            </div>
+                          )}
+                          {isBracelet && modalBraceletSize && (
+                            <div className="flex items-center gap-1.5 flex-wrap">
+                              <span className="text-slate-400 dark:text-slate-500 font-bold">{translateText('Bracelet Size')}:</span>
+                              <span className="text-slate-700 dark:text-slate-350 break-words">{modalBraceletSize}</span>
+                            </div>
+                          )}
+                          {isBangle && modalBangleSize && (
+                            <div className="flex items-center gap-1.5 flex-wrap">
+                              <span className="text-slate-400 dark:text-slate-500 font-bold">{translateText('Bangle Size')}:</span>
+                              <span className="text-slate-700 dark:text-slate-350 break-words">{modalBangleSize}</span>
+                            </div>
+                          )}
+                          {isChain && modalChainLength && (
+                            <div className="flex items-center gap-1.5 flex-wrap">
+                              <span className="text-slate-400 dark:text-slate-500 font-bold">{translateText('Chain Length')}:</span>
+                              <span className="text-slate-700 dark:text-slate-350 break-words">{modalChainLength}</span>
+                            </div>
+                          )}
+                        </>
+                      ) : (
+                        <>
+                          {getCategoryType(product.category) === 'electronics' && (
+                            <>
+                              <div className="flex items-center gap-1.5 flex-wrap">
+                                <span className="text-slate-400 dark:text-slate-500 font-bold">{translateText('Storage')}:</span>
+                                <span className="text-slate-700 dark:text-slate-350 break-words">{modalStorage}</span>
+                              </div>
+                              <div className="flex items-center gap-1.5 flex-wrap">
+                                <span className="text-slate-400 dark:text-slate-500 font-bold">{translateText('RAM')}:</span>
+                                <span className="text-slate-700 dark:text-slate-350 break-words">{modalRam}</span>
+                              </div>
+                              <div className="flex items-center gap-1.5 flex-wrap">
+                                <span className="text-slate-400 dark:text-slate-500 font-bold">{translateText('Color')}:</span>
+                                <span className="text-slate-700 dark:text-slate-350 break-words">{translateText(modalColor)}</span>
+                              </div>
+                            </>
+                          )}
+                          {getCategoryType(product.category) === 'grocery' && (
+                            <div className="flex items-center gap-1.5 flex-wrap">
+                              <span className="text-slate-400 dark:text-slate-500 font-bold">{translateText('Weight')}:</span>
+                              <span className="text-slate-700 dark:text-slate-350 break-words">{translateText(modalWeight)}</span>
+                            </div>
+                          )}
+                          {getCategoryType(product.category) === 'fashion' && (
+                            <>
+                              <div className="flex items-center gap-1.5 flex-wrap">
+                                <span className="text-slate-400 dark:text-slate-500 font-bold">{translateText('Size')}:</span>
+                                <span className="text-slate-700 dark:text-slate-350 break-words">{modalSize}</span>
+                              </div>
+                              <div className="flex items-center gap-1.5 flex-wrap">
+                                <span className="text-slate-400 dark:text-slate-500 font-bold">{translateText('Color')}:</span>
+                                <span className="text-slate-700 dark:text-slate-350 break-words">{translateText(modalColor)}</span>
+                              </div>
+                            </>
+                          )}
+                          {getCategoryType(product.category) === 'books' && (
+                            <div className="flex items-center gap-1.5 flex-wrap">
+                              <span className="text-slate-400 dark:text-slate-500 font-bold">{translateText('Format')}:</span>
+                              <span className="text-slate-700 dark:text-slate-350 break-words">{translateText(modalFormat)}</span>
+                            </div>
+                          )}
+                        </>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -2527,17 +2740,6 @@ export const ProductDetails = ({ productId }) => {
 
                 {/* Category specific layout */}
                 {(() => {
-                  const catLower = (product.category || '').toLowerCase();
-                  const isRing = catLower.includes('ring') && !catLower.includes('earring');
-                  const isEarring = catLower.includes('earring');
-                  const isNecklace = catLower.includes('necklace') || catLower.includes('choker');
-                  const isBracelet = catLower.includes('bracelet');
-                  const isBangle = catLower.includes('bangle');
-                  const isChain = catLower.includes('chain');
-                  const isBridal = catLower.includes('bridal');
-
-                  const isJewelry = isRing || isEarring || isNecklace || isBracelet || isBangle || isChain || isBridal || getCategoryType(product.category) === 'jewelry';
-
                   if (isJewelry) {
                     return (
                       <div className="space-y-4">

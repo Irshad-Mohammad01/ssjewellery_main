@@ -8,6 +8,38 @@ from backend.utils.email_service import send_order_confirmation
 
 orders_bp = Blueprint('orders', __name__)
 
+def is_address_complete(addr, name, phone):
+    if not addr or not isinstance(addr, dict):
+        return False
+    street = addr.get("street") or addr.get("address")
+    house = addr.get("house_number") or addr.get("house")
+    area = addr.get("area")
+    city = addr.get("city")
+    state = addr.get("state")
+    pincode = addr.get("pincode")
+    country = addr.get("country")
+    
+    if not name or not str(name).strip():
+        return False
+    if not phone or not str(phone).strip():
+        return False
+    if not house or not str(house).strip():
+        return False
+    if not street or not str(street).strip():
+        return False
+    if not area or not str(area).strip():
+        return False
+    if not city or not str(city).strip():
+        return False
+    if not state or not str(state).strip():
+        return False
+    if not pincode or not str(pincode).strip():
+        return False
+    if not country or not str(country).strip():
+        return False
+        
+    return True
+
 @orders_bp.route('', methods=['POST'])
 @token_required
 def create_order(current_user):
@@ -48,6 +80,28 @@ def create_order(current_user):
         user_obj = UserModel.query.with_for_update().get(int(current_user["_id"]))
         if not user_obj:
             return jsonify({"message": "User not found."}), 404
+
+        # Validate address completeness
+        addr_to_validate = None
+        if selected_address_id:
+            db_addr = DeliveryAddress.query.filter_by(id=int(selected_address_id), user_id=user_obj.id).first()
+            if not db_addr:
+                return jsonify({
+                    "success": False,
+                    "message": "A valid delivery address is required before proceeding to payment."
+                }), 400
+            addr_to_validate = db_addr.to_dict()
+        elif shipping_address:
+            addr_to_validate = shipping_address
+
+        name = (shipping_address or {}).get("name") or user_obj.name
+        phone = (shipping_address or {}).get("phone") or user_obj.phone
+
+        if not addr_to_validate or not is_address_complete(addr_to_validate, name, phone):
+            return jsonify({
+                "success": False,
+                "message": "A valid delivery address is required before proceeding to payment."
+            }), 400
 
         # 4. Lock BuyRequest row if any
         buy_req = None

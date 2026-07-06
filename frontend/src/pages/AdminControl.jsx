@@ -8,6 +8,8 @@ import {
   Settings, Globe, Link as LinkIcon
 } from 'lucide-react';
 import { AuthContext, API_BASE_URL, SERVER_BASE_URL } from '../context/AuthContext';
+import { formatPrice } from '../utils/priceFormatter';
+import { translateCategory } from '../utils/categoryTranslations';
 
 const ACTION_TYPES = [
   "Product Added",
@@ -1079,19 +1081,25 @@ export const AdminControl = () => {
                       <td className="py-3.5 px-2 text-slate-400 max-w-[120px] truncate" title={formatAddress(u.address)}>
                         {formatAddress(u.address)}
                       </td>
-                      <td className="py-3.5 px-2 text-slate-400">
+                      <td className="py-3.5 px-2 text-slate-400 admin-datetime-text">
                         {u.created_at ? new Date(u.created_at).toLocaleDateString() : "N/A"}
                       </td>
-                      <td className="py-3.5 px-2 text-slate-400">
+                      <td className="py-3.5 px-2 text-slate-400 admin-datetime-text">
                         {u.last_login ? new Date(u.last_login).toLocaleDateString() : "N/A"}
                       </td>
                       <td className="py-3.5 px-2 text-right">
-                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold border ${
-                          u.is_blocked 
-                            ? 'text-rose-500 bg-rose-500/10 border-rose-500/20' 
-                            : 'text-emerald-500 bg-emerald-500/10 border-emerald-500/20'
+                        <span className={`px-[12px] py-[4px] rounded-full text-[10px] font-semibold border shadow-sm ${
+                          (u.status || (u.is_blocked ? "Blocked" : "Active")).toLowerCase() === 'active'
+                            ? 'status-badge-active'
+                            : (u.status || (u.is_blocked ? "Blocked" : "Active")).toLowerCase() === 'inactive'
+                            ? 'bg-[#6B7280] text-[#FFFFFF] border-[#4B5563]'
+                            : (u.status || (u.is_blocked ? "Blocked" : "Active")).toLowerCase() === 'suspended'
+                            ? 'bg-[#EF4444] text-[#FFFFFF] border-[#DC2626]'
+                            : (u.status || (u.is_blocked ? "Blocked" : "Active")).toLowerCase() === 'pending verification'
+                            ? 'bg-[#F59E0B] text-[#FFFFFF] border-[#D97706]'
+                            : 'bg-[#B91C1C] text-[#FFFFFF] border-[#991B1B]'
                         }`}>
-                          {u.is_blocked ? "Blocked" : "Active"}
+                          {u.status || (u.is_blocked ? "Blocked" : "Active")}
                         </span>
                       </td>
                     </tr>
@@ -1156,16 +1164,16 @@ export const AdminControl = () => {
                   </div>
                   <div className="bg-slate-55 dark:bg-slate-955 p-3 rounded-2xl border border-slate-100 dark:border-slate-850">
                     <span className="text-[10px] text-slate-400 font-bold block mb-1">Total Orders</span>
-                    <span className="text-xs font-black text-emerald-500 flex items-center gap-1.5">
+                    <span className="stats-value-highlight flex items-center gap-1.5">
                       <ShoppingBag className="h-3.5 w-3.5" />
                       {selectedUserDetails.total_orders || 0}
                     </span>
                   </div>
                   <div className="bg-slate-55 dark:bg-slate-955 p-3 rounded-2xl border border-slate-100 dark:border-slate-850">
                     <span className="text-[10px] text-slate-400 font-bold block mb-1">Total Spent</span>
-                    <span className="text-xs font-black text-emerald-500 flex items-center gap-1.5">
+                    <span className="stats-value-highlight flex items-center gap-1.5">
                       <DollarSign className="h-3.5 w-3.5" />
-                      ₹{selectedUserDetails.total_spent || 0}
+                      ₹{formatPrice(selectedUserDetails.total_spent || 0)}
                     </span>
                   </div>
                 </div>
@@ -1214,7 +1222,17 @@ export const AdminControl = () => {
                       {selectedUserDetails.audit_logs.map((log, idx) => (
                         <div key={idx} className="bg-slate-50 dark:bg-slate-955 p-2.5 rounded-xl border border-slate-100 dark:border-slate-850 text-[10px] space-y-1">
                           <div className="flex justify-between items-center">
-                            <span className={`font-black ${log.status_changed_to === 'Blocked' ? 'text-rose-500' : 'text-emerald-500'}`}>
+                            <span className={`px-[12px] py-[4px] rounded-full text-[10px] font-semibold border shadow-sm ${
+                              (log.status_changed_to || '').toLowerCase() === 'active'
+                                ? 'status-badge-active'
+                                : (log.status_changed_to || '').toLowerCase() === 'inactive'
+                                ? 'bg-[#6B7280] text-[#FFFFFF] border-[#4B5563]'
+                                : (log.status_changed_to || '').toLowerCase() === 'suspended'
+                                ? 'bg-[#EF4444] text-[#FFFFFF] border-[#DC2626]'
+                                : (log.status_changed_to || '').toLowerCase() === 'pending verification'
+                                ? 'bg-[#F59E0B] text-[#FFFFFF] border-[#D97706]'
+                                : 'bg-[#B91C1C] text-[#FFFFFF] border-[#991B1B]'
+                            }`}>
                               {log.status_changed_to}
                             </span>
                             <span className="text-slate-450 font-mono">
@@ -1238,11 +1256,30 @@ export const AdminControl = () => {
                         <div key={order.id} className="border border-slate-100 dark:border-slate-800 rounded-2xl p-3 bg-slate-50/50 dark:bg-slate-900/50 space-y-2 text-xs">
                           <div className="flex justify-between items-center font-bold">
                             <span className="font-mono text-[10px] text-slate-450">{order.order_id}</span>
-                            <span className="text-emerald-500 font-black">₹{order.total_amount}</span>
+                            <span className="text-emerald-500 font-black">₹{formatPrice(order.total_amount)}</span>
                           </div>
                           <div className="flex justify-between items-center text-[10px] text-slate-400">
                             <span>{order.created_at ? formatTimestamp(order.created_at) : ''}</span>
-                            <span className="capitalize">{order.payment_status} • {order.order_status}</span>
+                            <div className="flex items-center gap-1.5">
+                              <span className="capitalize">{order.payment_status}</span>
+                              <span className={`px-[12px] py-[4px] rounded-full text-[10px] font-semibold border shadow-sm ${
+                                (order.order_status || '').toLowerCase() === 'pending'
+                                  ? 'status-badge-pending'
+                                  : (order.order_status || '').toLowerCase() === 'processing' || (order.order_status || '').toLowerCase() === 'confirmed' || (order.order_status || '').toLowerCase() === 'packed'
+                                  ? 'bg-[#3B82F6] text-white border-[#2563EB]'
+                                  : (order.order_status || '').toLowerCase() === 'shipped' || (order.order_status || '').toLowerCase() === 'dispatched'
+                                  ? 'bg-[#06B6D4] text-white border-[#0891B2]'
+                                  : (order.order_status || '').toLowerCase() === 'out for delivery'
+                                  ? 'bg-[#8B5CF6] text-white border-[#7C3AED]'
+                                  : (order.order_status || '').toLowerCase() === 'delivered'
+                                  ? 'status-badge-success'
+                                  : (order.order_status || '').toLowerCase() === 'cancelled'
+                                  ? 'bg-[#EF4444] text-white border-[#DC2626]'
+                                  : 'bg-[#6B7280] text-white border-[#4B5563]'
+                              }`}>
+                                {order.order_status}
+                              </span>
+                            </div>
                           </div>
                           <button
                             onClick={() => setViewingOrderItems(order.items)}
@@ -1893,7 +1930,7 @@ export const AdminControl = () => {
               <div className="bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800 p-5 rounded-2xl shadow-sm flex items-center justify-between">
                 <div>
                   <span className="text-[10px] font-bold text-slate-450 uppercase tracking-wider block">Total Sales</span>
-                  <span className="text-2xl font-black block mt-1">₹{Number(stats.total_sales ?? 0).toLocaleString('en-IN')}</span>
+                  <span className="text-2xl font-black block mt-1">₹{formatPrice(stats.total_sales ?? 0)}</span>
                 </div>
                 <div className="bg-emerald-500/10 p-3 rounded-xl text-emerald-500">
                   <BarChart3 className="h-6 w-6" />
@@ -2052,7 +2089,7 @@ export const AdminControl = () => {
                                   <div key={c.category} className="space-y-1">
                                     <div className="flex justify-between text-xs font-bold text-slate-600 dark:text-slate-400">
                                       <span>{c.category} ({c.count} items)</span>
-                                      <span className="font-extrabold text-slate-800 dark:text-slate-100">₹{c.value.toLocaleString()}</span>
+                                      <span className="font-extrabold text-slate-800 dark:text-slate-100">₹{formatPrice(c.value)}</span>
                                     </div>
                                     <div className="w-full h-3 bg-slate-100 dark:bg-slate-800/80 rounded-full overflow-hidden">
                                       <div 
@@ -2098,13 +2135,14 @@ export const AdminControl = () => {
                         const totalOrdersCount = orders.length || 1;
                         
                         const colors = {
-                          'Pending': '#f59e0b',
-                          'Confirmed': '#3b82f6',
-                          'Packed': '#6366f1',
-                          'Shipped': '#8b5cf6',
-                          'Out for Delivery': '#d946ef',
-                          'Delivered': '#10b981',
-                          'Cancelled': '#ef4444'
+                          'Pending': '#F59E0B',
+                          'Confirmed': '#3B82F6',
+                          'Packed': '#3B82F6',
+                          'Shipped': '#06B6D4',
+                          'Out for Delivery': '#8B5CF6',
+                          'Delivered': '#22C55E',
+                          'Cancelled': '#EF4444',
+                          'Returned': '#6B7280'
                         };
                         
                         return (
@@ -2194,7 +2232,7 @@ export const AdminControl = () => {
                           },
                           { 
                             label: "Total Revenue", 
-                            val: `₹${(overviewAnalytics.summary_cards?.total_revenue ?? 0).toLocaleString('en-IN')}`, 
+                            val: `₹${formatPrice(overviewAnalytics.summary_cards?.total_revenue ?? 0)}`, 
                             color: "text-purple-500",
                             bgColor: "bg-purple-500/10",
                             icon: ArrowUpRight
@@ -2222,7 +2260,7 @@ export const AdminControl = () => {
                         <h2 className="text-lg font-black text-slate-800 dark:text-slate-100 flex items-center gap-2">
                           <Clock className="h-5 w-5 text-emerald-500" />
                           <span>Audit Logs</span>
-                          <span className="px-2 py-0.5 text-xs bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-450 rounded-full font-bold">
+                          <span className="audit-logs-count-badge">
                             {generalAuditLogs.length} total
                           </span>
                         </h2>
@@ -2304,10 +2342,10 @@ export const AdminControl = () => {
                                   
                                   return (
                                     <tr key={log.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-955/20 transition-all border-b border-slate-100 dark:border-slate-800/50">
-                                      <td className="py-3.5 pr-4 font-semibold text-slate-500 dark:text-slate-405 whitespace-nowrap">
+                                      <td className="py-3.5 pr-4 text-slate-500 admin-timestamp-text whitespace-nowrap">
                                         {log.created_at}
                                       </td>
-                                      <td className="py-3.5 px-4 font-bold text-slate-800 dark:text-slate-205">
+                                      <td className="py-3.5 px-4 text-slate-800 admin-table-text">
                                         {log.admin_username}
                                       </td>
                                       <td className="py-3.5 px-4">
@@ -2315,18 +2353,17 @@ export const AdminControl = () => {
                                           {log.action_type}
                                         </span>
                                       </td>
-                                      <td className="py-3.5 px-4 text-slate-600 dark:text-slate-405 font-medium whitespace-nowrap">
+                                      <td className="py-3.5 px-4 text-slate-600 admin-table-text whitespace-nowrap">
                                         {log.module}
                                       </td>
-                                      <td className="py-3.5 px-4 max-w-[280px] text-slate-600 dark:text-slate-350 truncate font-semibold" title={log.details}>
+                                      <td className="py-3.5 px-4 max-w-[280px] text-slate-600 admin-table-text truncate" title={log.details}>
                                         {log.details}
                                       </td>
                                       <td className="py-3.5 pl-4">
-                                        <span className={`px-2 py-0.5 rounded-lg text-[10px] font-black uppercase ${
-                                          log.status === 'Success' 
-                                            ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-450' 
-                                            : 'bg-rose-100 text-rose-700 dark:bg-rose-950/40 dark:text-rose-455'
-                                        }`}>
+                                        <span className={log.status === 'Success' 
+                                            ? 'status-badge-success' 
+                                            : 'px-2 py-0.5 rounded-lg text-[10px] font-black uppercase bg-rose-100 text-rose-700 dark:bg-rose-950/40 dark:text-rose-455'
+                                        }>
                                           {log.status}
                                         </span>
                                       </td>
@@ -2384,7 +2421,7 @@ export const AdminControl = () => {
                           <h4 className="text-sm font-bold text-slate-800 dark:text-slate-200 mb-4 self-start">{chart.title}</h4>
                           <div className="w-full bg-slate-50 dark:bg-slate-955/60 border border-slate-105 dark:border-slate-850 p-2 rounded-2xl flex justify-start items-center overflow-x-auto">
                             <img 
-                              src={`${SERVER_BASE_URL}${chart.img}`} 
+                              src={`${SERVER_BASE_URL}${chart.img}`}
                               alt={chart.title}
                               className="max-h-[220px] min-w-[500px] lg:min-w-0 w-auto object-contain rounded-lg"
                             />
@@ -2419,7 +2456,7 @@ export const AdminControl = () => {
                           <div key={p.id} className="p-3 border border-slate-100 dark:border-slate-850 hover:border-slate-200 dark:hover:border-slate-750 bg-slate-50/50 dark:bg-slate-950/20 rounded-xl flex items-center justify-between transition-all">
                             <div className="max-w-[70%]">
                               <span className="text-xs font-bold text-slate-800 dark:text-slate-250 block truncate">{p.name}</span>
-                              <span className="text-[10px] font-bold text-slate-400 block mt-0.5">{p.category} • ₹{p.price}</span>
+                              <span className="text-[10px] font-bold text-slate-400 block mt-0.5">{p.category} • ₹{formatPrice(p.price)}</span>
                             </div>
                             <div className="text-right">
                               <span className="px-2 py-1 text-[11px] font-black bg-rose-100 dark:bg-rose-950/40 text-rose-600 dark:text-rose-450 rounded-lg animate-pulse">
@@ -2470,7 +2507,7 @@ export const AdminControl = () => {
                                   <span className="text-[10px] font-bold text-slate-400">by User ID: {o.user_id}</span>
                                 </div>
                                 <span className="text-[11px] font-extrabold text-slate-800 dark:text-slate-200 block mt-1">
-                                  Refund Amount: <span className="text-emerald-500">₹{o.total_price}</span>
+                                  Refund Amount: <span className="text-emerald-500">₹{formatPrice(o.total_price)}</span>
                                 </span>
                               </div>
                               <span className="text-[10px] font-black text-rose-500 uppercase bg-rose-500/10 px-2 py-0.5 rounded-full">
@@ -2524,7 +2561,7 @@ export const AdminControl = () => {
                     <div className="flex justify-between items-center mb-6">
                       <h3 className="text-base font-extrabold flex items-center gap-2">
                         <span>Catalog Products</span>
-                        <span className="px-2 py-0.5 text-xs bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-450 rounded-full font-bold">
+                        <span className="px-2.5 py-1 text-xs bg-[#D4A75F] text-[#111827] rounded-full font-bold shadow-sm">
                           {products.length}
                         </span>
                       </h3>
@@ -2583,13 +2620,13 @@ export const AdminControl = () => {
                                 <div className="flex flex-wrap items-center gap-1">
                                   {p.discount > 0 ? (
                                     <>
-                                      <span className="text-slate-455 dark:text-slate-505 line-through">₹{p.price}</span>
+                                      <span className="text-slate-455 dark:text-slate-505 line-through">₹{formatPrice(p.price)}</span>
                                       <span className="text-slate-400">↓</span>
-                                      <span className="text-slate-900 dark:text-slate-100 font-extrabold text-xs sm:text-sm">₹{discountedPrice}</span>
+                                      <span className="text-slate-900 dark:text-slate-100 font-extrabold text-xs sm:text-sm">₹{formatPrice(discountedPrice)}</span>
                                       <span className="px-1.5 py-0.5 text-[8px] sm:text-[9px] font-black bg-rose-100 text-rose-700 dark:bg-rose-950/40 dark:text-rose-455 rounded">{p.discount}% OFF</span>
                                     </>
                                   ) : (
-                                    <span className="text-slate-900 dark:text-slate-100 font-extrabold text-xs sm:text-sm">₹{p.price}</span>
+                                    <span className="text-slate-900 dark:text-slate-105 font-extrabold text-xs sm:text-sm">₹{formatPrice(p.price)}</span>
                                   )}
                                 </div>
                               </div>
@@ -2604,12 +2641,12 @@ export const AdminControl = () => {
                             {/* Stock Display */}
                             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-0.5 sm:gap-0 mb-3">
                               <span className="text-[10px] sm:text-xs text-slate-400 font-medium">Stock Status:</span>
-                              <span className={`px-2 py-0.5 text-[9px] sm:text-[10px] font-extrabold rounded-lg ${
+                              <span className={`stock-badge-container ${
                                 p.stock === 0 
-                                  ? 'bg-rose-100 text-rose-700 dark:bg-rose-950/40 dark:text-rose-450' 
+                                  ? 'stock-badge-out-of-stock' 
                                   : p.stock < 10 
-                                    ? 'bg-amber-100 text-amber-700 dark:bg-amber-950/40 dark:text-amber-450' 
-                                    : 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-450'
+                                    ? 'stock-badge-low-stock' 
+                                    : 'stock-badge-in-stock'
                               }`}>
                                 {p.stock === 0 ? "Out Of Stock" : p.stock < 10 ? `${p.stock} Left` : `${p.stock} Units`}
                               </span>
@@ -2691,17 +2728,26 @@ export const AdminControl = () => {
                     {orders.map(o => (
                       <tr key={o._id} className="hover:bg-slate-50/50 dark:hover:bg-slate-850/20">
                         <td className="py-3.5 font-mono font-bold text-slate-700 dark:text-slate-300">{o.order_id}</td>
-                        <td className="py-3.5 text-slate-500">{formatTimestamp(o.created_at)}</td>
-                        <td className="py-3.5 font-bold text-slate-800 dark:text-slate-100">₹{o.total_amount}</td>
+                        <td className="py-3.5 text-slate-500 admin-datetime-text">{formatTimestamp(o.created_at)}</td>
+                        <td className="py-3.5 font-bold text-slate-800 dark:text-slate-100">₹{formatPrice(o.total_amount)}</td>
                         <td className="py-3.5 max-w-[200px] truncate text-slate-550" title={o.shipping_address?.address}>
                           {o.shipping_address?.name} - {o.shipping_address?.address}, {o.shipping_address?.city}
                         </td>
                         <td className="py-3.5">
-                          <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold border ${
-                            o.status === 'Delivered' ? 'text-emerald-500 bg-emerald-500/10 border-emerald-500/20' :
-                            o.status === 'Out for Delivery' ? 'text-sky-500 bg-sky-500/10 border-sky-500/20' :
-                            o.status === 'Dispatched' ? 'text-indigo-500 bg-indigo-500/10 border-indigo-500/20' :
-                            'text-amber-500 bg-amber-500/10 border-amber-500/20'
+                          <span className={`px-[12px] py-[4px] rounded-full text-[10px] font-semibold border shadow-sm ${
+                            (o.status || '').toLowerCase() === 'pending'
+                              ? 'status-badge-pending'
+                              : (o.status || '').toLowerCase() === 'processing' || (o.status || '').toLowerCase() === 'confirmed' || (o.status || '').toLowerCase() === 'packed'
+                              ? 'bg-[#3B82F6] text-white border-[#2563EB]'
+                              : (o.status || '').toLowerCase() === 'shipped' || (o.status || '').toLowerCase() === 'dispatched'
+                              ? 'bg-[#06B6D4] text-white border-[#0891B2]'
+                              : (o.status || '').toLowerCase() === 'out for delivery'
+                              ? 'bg-[#8B5CF6] text-white border-[#7C3AED]'
+                              : (o.status || '').toLowerCase() === 'delivered'
+                              ? 'status-badge-success'
+                              : (o.status || '').toLowerCase() === 'cancelled'
+                              ? 'bg-[#EF4444] text-white border-[#DC2626]'
+                              : 'bg-[#6B7280] text-white border-[#4B5563]'
                           }`}>
                             {o.status}
                           </span>
@@ -2710,7 +2756,7 @@ export const AdminControl = () => {
                           <select
                             value={o.status}
                             onChange={(e) => handleOrderStatusUpdate(o._id, e.target.value)}
-                            className="text-xs bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-850 px-2 py-1 rounded-lg focus:outline-none text-slate-850 dark:text-slate-100"
+                            className="text-xs bg-slate-50 dark:bg-slate-955 border border-slate-200 dark:border-slate-855 px-2 py-1 rounded-lg focus:outline-none text-slate-850 dark:text-slate-100"
                           >
                             <option value="Pending">Pending</option>
                             <option value="Dispatched">Dispatched</option>
@@ -2721,7 +2767,7 @@ export const AdminControl = () => {
                         <td className="py-3.5 text-right">
                           <button
                             onClick={() => setSelectedOrder(o)}
-                            className="inline-flex items-center gap-1 px-2.5 py-1 bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-450 hover:bg-emerald-100 rounded-lg transition-colors font-bold"
+                            className="inline-flex items-center gap-1 px-2.5 py-1 bg-emerald-50 hover:bg-emerald-100 text-emerald-600 dark:bg-[#D4A75F]/10 dark:hover:bg-[#D4A75F]/15 dark:text-[#D4A75F] rounded-lg transition-colors font-bold"
                           >
                             <Eye className="h-3.5 w-3.5" />
                             <span>Details</span>
@@ -3218,16 +3264,11 @@ export const AdminControl = () => {
                       onChange={(e) => setEditingProduct({ ...editingProduct, category: e.target.value })}
                       className="w-full px-3 py-1.5 bg-slate-50 dark:bg-slate-955 border border-slate-200 dark:border-slate-800 rounded-xl text-xs focus:ring-1 focus:ring-emerald-500 outline-none text-slate-850 dark:text-slate-100"
                     >
-                      <option value="Rings">Rings</option>
-                      <option value="Earrings">Earrings</option>
-                      <option value="Necklaces">Necklaces</option>
-                      <option value="Pendants">Pendants</option>
-                      <option value="Bangles">Bangles</option>
-                      <option value="Bracelets">Bracelets</option>
-                      <option value="Chains">Chains</option>
-                      <option value="Bridal Collection">Bridal Collection</option>
-                      <option value="Diamond Collection">Diamond Collection</option>
-                      <option value="Gold Collection">Gold Collection</option>
+                      <option value="Rings">{translateCategory("Rings", editFormLang)}</option>
+                      <option value="Necklaces">{translateCategory("Necklaces", editFormLang)}</option>
+                      <option value="Earrings">{translateCategory("Earrings", editFormLang)}</option>
+                      <option value="Bracelets">{translateCategory("Bracelets", editFormLang)}</option>
+                      <option value="Bridal Collection">{translateCategory("Bridal Collection", editFormLang)}</option>
                     </select>
                   </div>
 
@@ -3488,16 +3529,11 @@ export const AdminControl = () => {
                       onChange={(e) => setNewProduct({ ...newProduct, category: e.target.value })}
                       className="w-full px-3 py-1.5 bg-slate-50 dark:bg-slate-955 border border-slate-200 dark:border-slate-800 rounded-xl text-xs focus:ring-1 focus:ring-emerald-500 outline-none text-slate-850 dark:text-slate-100"
                     >
-                      <option value="Rings">Rings</option>
-                      <option value="Earrings">Earrings</option>
-                      <option value="Necklaces">Necklaces</option>
-                      <option value="Pendants">Pendants</option>
-                      <option value="Bangles">Bangles</option>
-                      <option value="Bracelets">Bracelets</option>
-                      <option value="Chains">Chains</option>
-                      <option value="Bridal Collection">Bridal Collection</option>
-                      <option value="Diamond Collection">Diamond Collection</option>
-                      <option value="Gold Collection">Gold Collection</option>
+                      <option value="Rings">{translateCategory("Rings", formLang)}</option>
+                      <option value="Necklaces">{translateCategory("Necklaces", formLang)}</option>
+                      <option value="Earrings">{translateCategory("Earrings", formLang)}</option>
+                      <option value="Bracelets">{translateCategory("Bracelets", formLang)}</option>
+                      <option value="Bridal Collection">{translateCategory("Bridal Collection", formLang)}</option>
                     </select>
                   </div>
 
@@ -3721,7 +3757,7 @@ export const AdminControl = () => {
                 )}
                 <div>
                   <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Customer Email</span>
-                  <span className="text-slate-855 dark:text-slate-100">{selectedOrder.user_email || "N/A"}</span>
+                  <span className="text-slate-855 dark:text-slate-100">{selectedOrder.user_email || "Not Available"}</span>
                 </div>
                 <div>
                   <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Shipping Address</span>
@@ -3733,7 +3769,7 @@ export const AdminControl = () => {
               </div>
 
               {/* Order Status & Info */}
-              <div className="space-y-4 bg-slate-50 dark:bg-slate-950 p-4 rounded-2xl border border-slate-100 dark:border-slate-850">
+              <div className="space-y-4 bg-slate-50 dark:bg-slate-955 p-4 rounded-2xl border border-slate-100 dark:border-slate-850">
                 <h4 className="text-sm font-bold text-slate-800 dark:text-slate-200 border-b border-slate-200/60 dark:border-slate-800 pb-2">Order Meta Details</h4>
                 <div>
                   <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Order Date</span>
@@ -3743,19 +3779,33 @@ export const AdminControl = () => {
                 </div>
                 <div>
                   <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Estimated Arrival</span>
-                  <span className="text-emerald-500 font-semibold">
+                  <span className="text-emerald-500 dark:text-white font-semibold">
                     {selectedOrder.delivery_date || "Pending Dispatch"}
                   </span>
                 </div>
                 <div>
                   <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Payment Status</span>
-                  <span className="px-2 py-0.5 rounded-full text-[10px] font-bold border text-emerald-500 bg-emerald-500/10 border-emerald-500/20 inline-block mt-1">
+                  <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold border text-emerald-500 dark:text-white bg-emerald-500/10 border-emerald-500/20 inline-block mt-1">
                     Paid (Simulated Online/COD)
                   </span>
                 </div>
                 <div>
                   <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Fulfillment Status</span>
-                  <span className="px-2 py-0.5 rounded-full text-[10px] font-bold border text-blue-500 bg-blue-500/10 border-blue-500/20 inline-block mt-1">
+                  <span className={`px-[12px] py-[4px] rounded-full text-[10px] font-semibold border shadow-sm inline-block mt-1 ${
+                    (selectedOrder.status || '').toLowerCase() === 'pending'
+                      ? 'status-badge-pending'
+                      : (selectedOrder.status || '').toLowerCase() === 'processing' || (selectedOrder.status || '').toLowerCase() === 'confirmed' || (selectedOrder.status || '').toLowerCase() === 'packed'
+                      ? 'bg-[#3B82F6] text-white border-[#2563EB]'
+                      : (selectedOrder.status || '').toLowerCase() === 'shipped' || (selectedOrder.status || '').toLowerCase() === 'dispatched'
+                      ? 'bg-[#06B6D4] text-white border-[#0891B2]'
+                      : (selectedOrder.status || '').toLowerCase() === 'out for delivery'
+                      ? 'bg-[#8B5CF6] text-white border-[#7C3AED]'
+                      : (selectedOrder.status || '').toLowerCase() === 'delivered'
+                      ? 'status-badge-success'
+                      : (selectedOrder.status || '').toLowerCase() === 'cancelled'
+                      ? 'bg-[#EF4444] text-white border-[#DC2626]'
+                      : 'bg-[#6B7280] text-white border-[#4B5563]'
+                  }`}>
                     {selectedOrder.status}
                   </span>
                 </div>
@@ -3780,10 +3830,10 @@ export const AdminControl = () => {
                       </div>
                       <div>
                         <span className="font-semibold text-slate-855 dark:text-slate-100 block max-w-[250px] truncate">{item.name}</span>
-                        <span className="text-[10px] text-slate-400">Qty: {item.quantity} × ₹{item.price}</span>
+                        <span className="text-[10px] text-slate-400">Qty: {item.quantity} × ₹{formatPrice(item.price)}</span>
                       </div>
                     </div>
-                    <span className="font-bold text-slate-855 dark:text-slate-100">₹{item.price * item.quantity}</span>
+                    <span className="font-bold text-slate-855 dark:text-slate-100">₹{formatPrice(item.price * item.quantity)}</span>
                   </div>
                 ))}
               </div>
@@ -3872,7 +3922,7 @@ export const AdminControl = () => {
             <div className="mt-6 pt-4 border-t border-slate-150 dark:border-slate-855 flex justify-between items-center">
               <div>
                 <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Grand Total</span>
-                <span className="text-2xl font-black text-slate-900 dark:text-slate-50">₹{selectedOrder.total_amount}</span>
+                <span className="text-2xl font-black text-slate-900 dark:text-slate-50">₹{formatPrice(selectedOrder.total_amount)}</span>
               </div>
               <button
                 onClick={() => setSelectedOrder(null)}
@@ -3908,12 +3958,12 @@ export const AdminControl = () => {
                   {selectedStockProduct.stock} Units
                 </span>
               </div>
-              <span className={`px-2.5 py-1 text-[10px] font-black rounded-lg ${
+              <span className={`stock-badge-container ${
                 selectedStockProduct.stock === 0 
-                  ? 'bg-rose-100 text-rose-700 dark:bg-rose-950/40 dark:text-rose-450' 
+                  ? 'stock-badge-out-of-stock' 
                   : selectedStockProduct.stock < 10 
-                    ? 'bg-amber-100 text-amber-700 dark:bg-amber-950/40 dark:text-amber-450' 
-                    : 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-450'
+                    ? 'stock-badge-low-stock' 
+                    : 'stock-badge-in-stock'
               }`}>
                 {selectedStockProduct.stock === 0 ? "OUT OF STOCK" : selectedStockProduct.stock < 10 ? "LOW STOCK" : "IN STOCK"}
               </span>
@@ -4027,11 +4077,20 @@ export const AdminControl = () => {
                         <td className="py-3 font-bold text-slate-800 dark:text-slate-100">{o.quantity_ordered} Units</td>
                         <td className="py-3 text-slate-550">{o.payment_method}</td>
                         <td className="py-3">
-                          <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold border ${
-                            o.order_status === 'Delivered' ? 'text-emerald-500 bg-emerald-500/10 border-emerald-500/20' :
-                            o.order_status === 'Out for Delivery' ? 'text-sky-500 bg-sky-500/10 border-sky-500/20' :
-                            o.order_status === 'Cancelled' ? 'text-rose-500 bg-rose-500/10 border-rose-500/20' :
-                            'text-amber-500 bg-amber-500/10 border-amber-500/20'
+                          <span className={`px-[12px] py-[4px] rounded-full text-[10px] font-semibold border shadow-sm ${
+                            (o.order_status || '').toLowerCase() === 'pending'
+                              ? 'status-badge-pending'
+                              : (o.order_status || '').toLowerCase() === 'processing' || (o.order_status || '').toLowerCase() === 'confirmed' || (o.order_status || '').toLowerCase() === 'packed'
+                              ? 'bg-[#3B82F6] text-white border-[#2563EB]'
+                              : (o.order_status || '').toLowerCase() === 'shipped' || (o.order_status || '').toLowerCase() === 'dispatched'
+                              ? 'bg-[#06B6D4] text-white border-[#0891B2]'
+                              : (o.order_status || '').toLowerCase() === 'out for delivery'
+                              ? 'bg-[#8B5CF6] text-white border-[#7C3AED]'
+                              : (o.order_status || '').toLowerCase() === 'delivered'
+                              ? 'status-badge-success'
+                              : (o.order_status || '').toLowerCase() === 'cancelled'
+                              ? 'bg-[#EF4444] text-white border-[#DC2626]'
+                              : 'bg-[#6B7280] text-white border-[#4B5563]'
                           }`}>
                             {o.order_status}
                           </span>

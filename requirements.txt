@@ -14,4 +14,4 @@ pandas
 matplotlib
 openpyxl
 flask_mail
-psycopg2-binary
+psycopg2-binary==2.9.9

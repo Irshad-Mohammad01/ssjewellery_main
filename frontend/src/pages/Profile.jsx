@@ -9,6 +9,7 @@ import {
 import { AuthContext, API_BASE_URL } from '../context/AuthContext';
 import { CartContext } from '../context/CartContext';
 import { useTranslation } from '../hooks/useTranslation';
+import { formatPrice } from '../utils/priceFormatter';
 
 const formatTimestamp = (dateInput) => {
   if (!dateInput) return '';
@@ -259,8 +260,8 @@ export const Profile = () => {
       <tr>
         <td style="padding: 12px 10px; border-bottom: 1px solid #e2e8f0; text-align: left; font-size: 13px;">${item.name}</td>
         <td style="padding: 12px 10px; border-bottom: 1px solid #e2e8f0; text-align: center; font-size: 13px;">${item.quantity}</td>
-        <td style="padding: 12px 10px; border-bottom: 1px solid #e2e8f0; text-align: right; font-size: 13px;">₹${parseFloat(item.price).toFixed(2)}</td>
-        <td style="padding: 12px 10px; border-bottom: 1px solid #e2e8f0; text-align: right; font-size: 13px; font-weight: bold;">₹${(parseFloat(item.price) * item.quantity).toFixed(2)}</td>
+        <td style="padding: 12px 10px; border-bottom: 1px solid #e2e8f0; text-align: right; font-size: 13px;">₹${formatPrice(item.price)}</td>
+        <td style="padding: 12px 10px; border-bottom: 1px solid #e2e8f0; text-align: right; font-size: 13px; font-weight: bold;">₹${formatPrice(item.price * item.quantity)}</td>
       </tr>
     `).join('');
 
@@ -320,7 +321,7 @@ export const Profile = () => {
             </table>
             <div class="totals">
               <div>Payment Mode: COD</div>
-              <div>Amount Due: ₹${parseFloat(order.total_amount).toFixed(2)}</div>
+              <div>Amount Due: ₹${formatPrice(order.total_amount)}</div>
             </div>
           </div>
           <script>window.onload = function() { window.print(); }</script>
@@ -733,7 +734,7 @@ export const Profile = () => {
                         <div className="flex items-center justify-between">
                           <div>
                             <p className="text-[10px] font-bold text-slate-400">ID: {order.order_id.substring(0, 12)}...</p>
-                            <p className="text-xs font-extrabold text-[#3F1D5A] dark:text-slate-205 mt-0.5">₹{parseFloat(order.total_amount).toFixed(2)}</p>
+                            <p className="text-xs font-extrabold text-[#3F1D5A] dark:text-slate-205 mt-0.5">₹{formatPrice(order.total_amount)}</p>
                           </div>
                           <div className="flex items-center space-x-2">
                             <span className={`text-[9px] font-black px-2 py-0.5 rounded-lg border ${getStatusStyle(order.status)}`}>
@@ -756,7 +757,7 @@ export const Profile = () => {
                               {order.items.map((item, idx) => (
                                 <div key={idx} className="py-1.5 flex justify-between">
                                   <span className="font-semibold text-slate-700 dark:text-slate-300">{item.name} x{item.quantity}</span>
-                                  <span className="font-extrabold text-slate-900 dark:text-white">₹{(parseFloat(item.price) * item.quantity).toFixed(2)}</span>
+                                  <span className="font-extrabold text-slate-900 dark:text-white">₹{formatPrice(item.price * item.quantity)}</span>
                                 </div>
                               ))}
                             </div>
@@ -874,7 +875,7 @@ export const Profile = () => {
                       />
                       <div className="flex-1 min-w-0">
                         <p className="text-xs font-bold text-slate-800 dark:text-slate-100 truncate">{item.name}</p>
-                        <p className="text-[10px] font-extrabold text-[#D4A75F] mt-0.5">₹{parseFloat(item.price).toFixed(2)}</p>
+                        <p className="text-[10px] font-extrabold text-[#D4A75F] mt-0.5">₹{formatPrice(item.price)}</p>
                       </div>
                       <div className="flex gap-1.5 flex-shrink-0">
                         <button

@@ -845,15 +845,26 @@ def update_buy_request_status(id):
         return jsonify({"message": "Buy request not found"}), 404
         
     data = request.get_json() or {}
-    status = data.get("status") # 'Approved' or 'Rejected'
+    status = data.get("status") # 'Approved', 'Rejected', or 'Confirmed'
     expected_delivery_date = data.get("expected_delivery_date", "")
     expected_availability_date = data.get("expected_availability_date", "")
     admin_note = data.get("admin_note", "")
     
-    if status not in ['Approved', 'Rejected']:
-        return jsonify({"message": "Invalid status. Must be 'Approved' or 'Rejected'."}), 400
+    if status and status not in ['Approved', 'Rejected', 'Confirmed']:
+        return jsonify({"message": "Invalid status. Must be 'Approved', 'Rejected', or 'Confirmed'."}), 400
         
-    if status == 'Approved':
+    old_status = req.status
+    
+    if status:
+        if req.status in ['Pending', 'Approved', 'Confirmed']:
+            req.status = status
+            
+            if status == 'Confirmed' and old_status == 'Pending':
+                from backend.routes.auth import transition_buy_request
+                import threading
+                threading.Thread(target=transition_buy_request, args=(req.id,)).start()
+                
+    if status in ['Approved', 'Confirmed'] or req.status in ['Confirmed', 'Order Preparation', 'Available', 'Awaiting Payment', 'Converted To Order', 'Purchased']:
         from datetime import datetime
         import pytz
         ist = pytz.timezone('Asia/Kolkata')
@@ -863,17 +874,17 @@ def update_buy_request_status(id):
             try:
                 avail_date = datetime.strptime(expected_availability_date, "%Y-%m-%d").date()
                 if avail_date < today_date:
-                    return jsonify({"message": "Please select today or a future date."}), 400
+                    return jsonify({"message": "Please select today or a future date for availability."}), 400
             except ValueError:
-                return jsonify({"message": "Please select today or a future date."}), 400
+                return jsonify({"message": "Please select today or a future date for availability."}), 400
                 
         if expected_delivery_date:
             try:
                 deliv_date = datetime.strptime(expected_delivery_date, "%Y-%m-%d").date()
                 if deliv_date < today_date:
-                    return jsonify({"message": "Please select today or a future date."}), 400
+                    return jsonify({"message": "Please select today or a future date for delivery."}), 400
             except ValueError:
-                return jsonify({"message": "Please select today or a future date."}), 400
+                return jsonify({"message": "Please select today or a future date for delivery."}), 400
                 
         if expected_availability_date and expected_delivery_date:
             try:
@@ -884,20 +895,36 @@ def update_buy_request_status(id):
             except ValueError:
                 pass
                 
-    req.status = status
-    if status == 'Approved':
         req.expected_delivery_date = expected_delivery_date
         req.expected_availability_date = expected_availability_date
         req.admin_note = admin_note
         
-        # User receives Expected Delivery Date & Confirmation Request
-        title1 = "Request Approved"
-        msg1 = f"Your buy request for '{req.product_name}' (Qty: {req.quantity}) has been approved. Expected Delivery: {expected_delivery_date}. Expected Availability: {expected_availability_date}. Note: {admin_note}."
-        add_user_notification(str(req.user_id), title1, msg1)
-        
-        title2 = "Awaiting Confirmation"
-        msg2 = "Your approved buy request is awaiting your confirmation to proceed to checkout."
-        add_user_notification(str(req.user_id), title2, msg2)
+        if old_status == 'Pending' and status == 'Confirmed':
+            title1 = "Request Confirmed"
+            msg1 = f"Your buy request for '{req.product_name}' (Qty: {req.quantity}) has been confirmed. Expected Delivery: {expected_delivery_date}. Expected Availability: {expected_availability_date}. Note: {admin_note}."
+            add_user_notification(str(req.user_id), title1, msg1)
+            
+            if req.user and req.user.email:
+                try:
+                    from backend.utils.email_service import send_email
+                    email_subject = f"Your Buy Request for {req.product_name} is Confirmed!"
+                    email_body = f"Hello {req.user.name or 'Customer'},\n\nYour buy request for '{req.product_name}' (Quantity: {req.quantity}) has been confirmed by the administrator.\n\nExpected Product Availability: {expected_availability_date}\nExpected Delivery Date: {expected_delivery_date}\nAdmin Note: {admin_note or 'No additional notes.'}\n\nStatus: Confirmed\n\nWe will notify you as soon as the item is available for checkout.\n\nBest regards,\nSSJewellery Team"
+                    send_email(req.user.email, email_subject, email_body)
+                except Exception as mail_ex:
+                    print("Failed to send buy request confirmation email:", mail_ex)
+        elif status == 'Approved':
+            # Approved path (backward compatibility if any client triggers it)
+            title1 = "Request Approved"
+            msg1 = f"Your buy request for '{req.product_name}' (Qty: {req.quantity}) has been approved. Expected Delivery: {expected_delivery_date}. Expected Availability: {expected_availability_date}. Note: {admin_note}."
+            add_user_notification(str(req.user_id), title1, msg1)
+            
+            title2 = "Awaiting Confirmation"
+            msg2 = "Your approved buy request is awaiting your confirmation to proceed to checkout."
+            add_user_notification(str(req.user_id), title2, msg2)
+        else:
+            title1 = "Request Details Updated"
+            msg1 = f"The administrator has updated the expected dates for '{req.product_name}'. Expected Delivery: {expected_delivery_date}. Expected Availability: {expected_availability_date}. Note: {admin_note}."
+            add_user_notification(str(req.user_id), title1, msg1)
     else:
         # Rejected
         req.admin_note = admin_note
@@ -906,7 +933,7 @@ def update_buy_request_status(id):
         add_user_notification(str(req.user_id), title, msg)
         
     db.session.commit()
-    return jsonify({"message": f"Buy request {status.lower()} successfully", "success": True, "buy_request": req.to_dict()}), 200
+    return jsonify({"message": f"Buy request updated successfully", "success": True, "buy_request": req.to_dict()}), 200
 
 
 @admin_bp.route('/report-settings', methods=['GET'])

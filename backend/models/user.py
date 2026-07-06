@@ -21,6 +21,7 @@ class DeliveryAddress(db.Model):
     pincode = db.Column(EncryptedString(255), default="")
     address_type = db.Column(db.String(50), default="Home")
     alternate_mobile_number = db.Column(db.String(15), nullable=True)
+    country = db.Column(EncryptedString(255), default="India")
 
     is_default = db.Column(db.Boolean, default=False)
     created_at = db.Column(db.DateTime, default=lambda: datetime.now(pytz.timezone('Asia/Kolkata')))
@@ -40,6 +41,7 @@ class DeliveryAddress(db.Model):
             "address_type": self.address_type or "Home",
             "is_default": bool(self.is_default),
             "alternate_mobile_number": self.alternate_mobile_number or "",
+            "country": self.country or "India",
             "created_at": format_iso_datetime(self.created_at) if hasattr(self, 'created_at') else None
         }
 

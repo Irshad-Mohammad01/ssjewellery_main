@@ -24,6 +24,7 @@ def seed_database():
     print("Initiating SSJewellery Database Seeding (SQLAlchemy)...")
     
     with app.app_context():
+        # Clear existing data in correct dependency order to avoid foreign key violations
         # [DISABLED per user request to prevent automatic database truncation. Run these statements manually if needed:]
         # print("Clearing old records from tables...")
         # try:

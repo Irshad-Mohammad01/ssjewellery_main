@@ -65,6 +65,45 @@ def run_updates():
             db.session.rollback()
             print("first_login column might already exist or failed:", e)
 
+        try:
+            db.session.execute(db.text("ALTER TABLE categories ADD COLUMN name_en VARCHAR(100) DEFAULT NULL"))
+            db.session.commit()
+            print("Successfully added name_en column to categories.")
+        except Exception as e:
+            db.session.rollback()
+            print("name_en column might already exist or failed:", e)
+
+        try:
+            db.session.execute(db.text("ALTER TABLE categories ADD COLUMN name_hi VARCHAR(100) DEFAULT NULL"))
+            db.session.commit()
+            print("Successfully added name_hi column to categories.")
+        except Exception as e:
+            db.session.rollback()
+            print("name_hi column might already exist or failed:", e)
+
+        # Backpopulate translations for existing categories
+        try:
+            translations = {
+                "Rings": {"en": "Rings", "hi": "अंगूठियाँ"},
+                "Necklaces": {"en": "Necklaces", "hi": "हार"},
+                "Earrings": {"en": "Earrings", "hi": "झुमके"},
+                "Bracelets": {"en": "Bracelets", "hi": "कंगन"},
+                "Bangles": {"en": "Bangles", "hi": "चूड़ियाँ"},
+                "Bridal Collection": {"en": "Bridal Collection", "hi": "ब्राइडल कलेक्शन"}
+            }
+            for name, trans in translations.items():
+                db.session.execute(
+                    db.text("UPDATE categories SET name_en = :en, name_hi = :hi WHERE name = :name"),
+                    {"en": trans["en"], "hi": trans["hi"], "name": name}
+                )
+            db.session.execute(db.text("UPDATE categories SET name_en = name WHERE name_en IS NULL"))
+            db.session.commit()
+            print("Successfully backpopulated category translations.")
+        except Exception as e:
+            db.session.rollback()
+            print("Failed to backpopulate category translations:", e)
+
+
         # Import all models to ensure they are registered with SQLAlchemy metadata
         from backend.models.product import ProductModel, ProductImageModel, StockHistoryModel, ProductAuditLogModel, ProductVariantModel, BuyRequestModel
         from backend.models.user import UserModel, DeliveryAddress, UserStatusAuditLog

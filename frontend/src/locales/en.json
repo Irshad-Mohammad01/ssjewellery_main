@@ -33,7 +33,9 @@
     "sending": "Sending...",
     "verifying": "Verifying...",
     "success": "Success",
-    "error": "Error"
+    "error": "Error",
+    "all_products": "All Products",
+    "about_us": "About Us"
   },
   "navbar": {
     "categories_title": "Categories",
@@ -61,7 +63,25 @@
     "quick_view": "Quick View",
     "add_wishlist": "Add to Wishlist",
     "remove_wishlist": "Remove from Wishlist",
-    "off": "OFF"
+    "off": "OFF",
+    "showing_premium": "Showing premium handpicked items in stock.",
+    "search_results": "Search Results for \"{query}\"",
+    "category_products": "{category} Products",
+    "slide1_title": "The Solitaire Diamond Collection",
+    "slide1_subtitle": "Eternal Brilliance, Handcrafted Elegance",
+    "slide1_desc": "Explore our signature 18k yellow gold and white gold diamond solitaire rings. Perfect for weddings, proposals, and lifetime memories.",
+    "slide1_badge": "Rings Special",
+    "slide1_btnText": "Shop Solitaires",
+    "slide2_title": "The Royal Empress Collection",
+    "slide2_subtitle": "Ornate Emerald & Pearl Artistry",
+    "slide2_desc": "Adorn yourself with masterfully crafted necklaces, chokers, and bridal neckwear set in solid 22k gold and premium gemstones.",
+    "slide2_badge": "Necklaces Special",
+    "slide2_btnText": "Shop Necklaces",
+    "slide3_title": "Imperial Bridal Heirlooms",
+    "slide3_subtitle": "Maang Tikkas, Polki Sets & Rubies",
+    "slide3_desc": "Celebrate your grand day with timeless heirloom bridal sets, meticulously set with uncut Polki diamonds and fine rubies.",
+    "slide3_badge": "Bridal Special",
+    "slide3_btnText": "Explore Bridal Set"
   },
   "footer": {
     "about_title": "SSJewellery",
@@ -338,7 +358,7 @@
     "unlock_free": "Add products worth ₹{amount} more to unlock FREE shipping!",
     "total_amount": "Total Amount",
     "proceed_checkout": "Proceed to Checkout",
-      "secure_checkout": "Secure checkout verified by SSJewellery",
+    "secure_checkout": "Secure checkout verified by SSJewellery",
     "items": "items",
     "item": "item"
   },

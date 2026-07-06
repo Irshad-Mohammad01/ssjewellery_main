@@ -6,12 +6,14 @@ import { CartContext } from '../context/CartContext';
 import { AuthContext } from '../context/AuthContext';
 import { useTranslation } from '../hooks/useTranslation';
 import { LuxuryImage } from './LuxuryImage';
+import { formatPrice } from '../utils/priceFormatter';
+import { translateCategory } from '../utils/categoryTranslations';
 
 export const ProductCard = ({ product, onAdminAction }) => {
   const { addToCart, addToWishlist, removeFromWishlist, isInWishlist, triggerAuthModal } = useContext(CartContext);
   const { user, isAdmin } = useContext(AuthContext);
   const navigate = useNavigate();
-  const { t, localize } = useTranslation();
+  const { t, localize, language } = useTranslation();
 
   const isProductInWishlist = isInWishlist(product._id);
   const discountedPrice = Math.round(product.price - (product.price * (product.discount / 100)));
@@ -90,11 +92,7 @@ export const ProductCard = ({ product, onAdminAction }) => {
       <div className="p-2.5 sm:p-4.5 flex-grow flex flex-col">
         {/* Category */}
         <span className="text-[9px] sm:text-xs font-semibold text-[#D4A75F] uppercase tracking-wider">
-          {(() => {
-            const catKey = `common.${product.category?.toLowerCase()}`;
-            const trans = t(catKey);
-            return trans === catKey ? product.category : trans;
-          })()}
+          {translateCategory(product.category, language)}
         </span>
 
         {/* Product Title */}
@@ -126,11 +124,11 @@ export const ProductCard = ({ product, onAdminAction }) => {
         {/* Price Row */}
         <div className="flex items-baseline space-x-1.5 mb-1 flex-wrap">
           <span className="text-sm sm:text-xl font-extrabold text-[#3F1D5A] dark:text-[#EFE7DB]">
-            ₹{discountedPrice.toLocaleString('en-IN')}
+            ₹{formatPrice(discountedPrice)}
           </span>
           {product.discount > 0 && (
             <span className="text-[10px] sm:text-sm text-slate-400 line-through font-medium">
-              ₹{product.price.toLocaleString('en-IN')}
+              ₹{formatPrice(product.price)}
             </span>
           )}
         </div>

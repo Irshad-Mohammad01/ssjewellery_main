@@ -15,7 +15,7 @@ from openpyxl.utils import get_column_letter
 
 from backend.extensions import db
 from backend.utils.security import (
-    decrypt, mask_name, mask_email, mask_phone, mask_address, mask_city, mask_state, mask_pincode
+    decryptSensitiveData, mask_name, mask_email, mask_phone, mask_address, mask_city, mask_state, mask_pincode
 )
 
 # Style Constants for Excel formatting
@@ -250,13 +250,13 @@ def get_users_report():
         ])
     
     # Decrypt and mask PII for report exports
-    df['Full Name'] = df['Full Name'].apply(lambda x: mask_name(decrypt(x)))
-    df['Email'] = df['Email'].apply(lambda x: mask_email(decrypt(x)))
-    df['Mobile Number'] = df['Mobile Number'].apply(lambda x: mask_phone(decrypt(x)))
-    df['Address'] = df['Address'].apply(lambda x: mask_address(decrypt(x)))
-    df['City'] = df['City'].apply(lambda x: mask_city(decrypt(x)))
-    df['State'] = df['State'].apply(lambda x: mask_state(decrypt(x)))
-    df['Pincode'] = df['Pincode'].apply(lambda x: mask_pincode(decrypt(x)))
+    df['Full Name'] = df['Full Name'].apply(lambda x: mask_name(decryptSensitiveData(x)))
+    df['Email'] = df['Email'].apply(lambda x: mask_email(decryptSensitiveData(x)))
+    df['Mobile Number'] = df['Mobile Number'].apply(lambda x: mask_phone(decryptSensitiveData(x)))
+    df['Address'] = df['Address'].apply(lambda x: mask_address(decryptSensitiveData(x)))
+    df['City'] = df['City'].apply(lambda x: mask_city(decryptSensitiveData(x)))
+    df['State'] = df['State'].apply(lambda x: mask_state(decryptSensitiveData(x)))
+    df['Pincode'] = df['Pincode'].apply(lambda x: mask_pincode(decryptSensitiveData(x)))
     return df
 
 def get_orders_report(m, y):
@@ -317,9 +317,9 @@ def get_orders_report(m, y):
         ])
     
     # Decrypt and mask PII for report exports
-    df['Customer Name'] = df['Customer Name'].apply(lambda x: mask_name(decrypt(x)))
-    df['Customer Email'] = df['Customer Email'].apply(lambda x: mask_email(decrypt(x)))
-    df['Customer Mobile'] = df['Customer Mobile'].apply(lambda x: mask_phone(decrypt(x)))
+    df['Customer Name'] = df['Customer Name'].apply(lambda x: mask_name(decryptSensitiveData(x)))
+    df['Customer Email'] = df['Customer Email'].apply(lambda x: mask_email(decryptSensitiveData(x)))
+    df['Customer Mobile'] = df['Customer Mobile'].apply(lambda x: mask_phone(decryptSensitiveData(x)))
     return df
 
 def get_order_items_report(m, y):
@@ -464,7 +464,7 @@ def get_buy_requests_report(m, y):
         ])
     
     # Decrypt and mask PII for report exports
-    df['Customer Name'] = df['Customer Name'].apply(lambda x: mask_name(decrypt(x)))
+    df['Customer Name'] = df['Customer Name'].apply(lambda x: mask_name(decryptSensitiveData(x)))
     return df
 
 def get_support_tickets_report(m, y):
@@ -496,8 +496,8 @@ def get_support_tickets_report(m, y):
         ])
     
     # Decrypt and mask PII for report exports
-    df['Customer Name'] = df['Customer Name'].apply(lambda x: mask_name(decrypt(x)))
-    df['Email'] = df['Email'].apply(lambda x: mask_email(decrypt(x)))
+    df['Customer Name'] = df['Customer Name'].apply(lambda x: mask_name(decryptSensitiveData(x)))
+    df['Email'] = df['Email'].apply(lambda x: mask_email(decryptSensitiveData(x)))
     return df
 
 def get_transactions_report(m, y):
@@ -529,7 +529,7 @@ def get_transactions_report(m, y):
         return pd.DataFrame(columns=["Transaction ID", "Customer", "Order ID", "Amount", "Payment Method", "Payment Status", "Date", "Time"])
     
     # Decrypt and mask PII for report exports
-    df['Customer'] = df['Customer'].apply(lambda x: mask_name(decrypt(x)))
+    df['Customer'] = df['Customer'].apply(lambda x: mask_name(decryptSensitiveData(x)))
     return df
 
 def write_dashboard_sheet(writer, stats, month_name, year):

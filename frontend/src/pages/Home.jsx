@@ -1,16 +1,14 @@
-import React, { useState, useEffect, useContext, useCallback, useMemo, useRef } from 'react';
+import React, { useState, useEffect, useContext, useCallback, useMemo } from 'react';
 import { useLocation, Link, useSearchParams } from 'react-router-dom';
 import axios from 'axios';
 import { ChevronLeft, ChevronRight, ShoppingBag, Eye, Star, Sparkles, X, Search, Users, Calendar, Clock, DollarSign, MapPin, Check, Lock, RefreshCw, Plus, Trash2, Edit3, Upload } from 'lucide-react';
 import { motion, useScroll, useTransform } from 'framer-motion';
-import gsap from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
-
-gsap.registerPlugin(ScrollTrigger);
 import { ProductCard, ProductCardSkeleton } from '../components/ProductCard';
 import { ProductDetails } from './ProductDetails';
 import { AuthContext, API_BASE_URL } from '../context/AuthContext';
 import { LuxuryImage } from '../components/LuxuryImage';
+import { formatPrice } from '../utils/priceFormatter';
+import { translateCategory, translateUiLabel } from '../utils/categoryTranslations';
 
 
 const ACTION_TYPES = [
@@ -121,140 +119,18 @@ const BannerSlider = React.memo(({
   isAdmin, 
   handleNextSlide, 
   handlePrevSlide, 
+  opacityParallax, 
+  yParallax,
   bannersLoading,
   onCategoryClick
 }) => {
-  const slideRefs        = useRef([]);
-  const contentRef       = useRef(null);
-  const badgeRef         = useRef(null);
-  const titleRef         = useRef(null);
-  const subtitleRef      = useRef(null);
-  const descRef          = useRef(null);
-  const btnRef           = useRef(null);
-  const progressBarRef   = useRef(null);
-  const prevActiveRef    = useRef(activeSlide);
-  const isAnimatingRef   = useRef(false);
-
-  const handleBannerButtonClick = useCallback((e, slide) => {
+  const handleBannerButtonClick = (e, slide) => {
     const link = slide.btnLink || `/?category=${slide.catFilter}`;
     if (link.startsWith('/?category=') || link === '/') {
       e.preventDefault();
       onCategoryClick(slide.catFilter || 'All', 'banner');
     }
-  }, [onCategoryClick]);
-
-  /* ---------- Text stagger-in timeline ---------- */
-  const runTextIn = useCallback(() => {
-    const els = [
-      badgeRef.current,
-      titleRef.current,
-      subtitleRef.current,
-      descRef.current,
-      btnRef.current
-    ].filter(Boolean);
-    if (els.length === 0) return;
-    gsap.killTweensOf(els);
-    const tl = gsap.timeline();
-    tl.set(els, { opacity: 0, y: 32 });
-    if (badgeRef.current)
-      tl.to(badgeRef.current,    { opacity: 1, y: 0, duration: 0.48, ease: 'back.out(2)' });
-    if (titleRef.current)
-      tl.to(titleRef.current,    { opacity: 1, y: 0, duration: 0.62, ease: 'power3.out' }, '-=0.22');
-    if (subtitleRef.current)
-      tl.to(subtitleRef.current, { opacity: 1, y: 0, duration: 0.52, ease: 'power2.out' }, '-=0.35');
-    if (descRef.current)
-      tl.to(descRef.current,     { opacity: 1, y: 0, duration: 0.48, ease: 'power2.out' }, '-=0.28');
-    if (btnRef.current)
-      tl.to(btnRef.current,      { opacity: 1, y: 0, duration: 0.48, ease: 'back.out(1.6)' }, '-=0.22');
-  }, []);
-
-  /* ---------- Progress bar animation ---------- */
-  const runProgressBar = useCallback(() => {
-    if (!progressBarRef.current) return;
-    gsap.killTweensOf(progressBarRef.current);
-    gsap.fromTo(
-      progressBarRef.current,
-      { scaleX: 0 },
-      { scaleX: 1, duration: 5, ease: 'none', transformOrigin: 'left center' }
-    );
-  }, []);
-
-  /* ---------- Initial mount animation ---------- */
-  useEffect(() => {
-    if (bannersLoading || slides.length === 0) return;
-    const timer = setTimeout(() => {
-      runTextIn();
-      runProgressBar();
-    }, 200);
-    return () => clearTimeout(timer);
-  }, [bannersLoading, slides.length, runTextIn, runProgressBar]);
-
-  /* ---------- GSAP 3D slide transition ---------- */
-  useEffect(() => {
-    if (bannersLoading || slides.length === 0) return;
-    const prev = prevActiveRef.current;
-    const curr = activeSlide;
-    if (prev === curr) return;
-    if (isAnimatingRef.current) {
-      prevActiveRef.current = curr;
-      return;
-    }
-    isAnimatingRef.current = true;
-
-    /* Animate current text OUT */
-    const textEls = [
-      badgeRef.current, titleRef.current,
-      subtitleRef.current, descRef.current, btnRef.current
-    ].filter(Boolean);
-    if (textEls.length > 0) {
-      gsap.to(textEls, { opacity: 0, y: -22, duration: 0.28, ease: 'power2.in', stagger: 0.05 });
-    }
-
-    const dir = (curr > prev || (prev === slides.length - 1 && curr === 0)) ? 1 : -1;
-    const prevEl = slideRefs.current[prev];
-    const currEl = slideRefs.current[curr];
-
-    /* OUT: previous slide rotates away */
-    if (prevEl) {
-      gsap.to(prevEl, {
-        opacity: 0,
-        rotationY: dir * -22,
-        scale: 0.84,
-        z: -280,
-        duration: 0.72,
-        ease: 'power3.inOut',
-        onComplete: () => {
-          gsap.set(prevEl, { rotationY: 0, scale: 1, z: 0, zIndex: 1 });
-        }
-      });
-    }
-
-    /* IN: incoming slide arrives from depth */
-    if (currEl) {
-      gsap.set(currEl, {
-        opacity: 0,
-        rotationY: dir * 26,
-        scale: 0.88,
-        z: -220,
-        zIndex: 10
-      });
-      gsap.to(currEl, {
-        opacity: 1,
-        rotationY: 0,
-        scale: 1,
-        z: 0,
-        duration: 0.78,
-        ease: 'power3.out',
-        delay: 0.12,
-        onComplete: () => {
-          isAnimatingRef.current = false;
-          prevActiveRef.current = curr;
-          runTextIn();
-          runProgressBar();
-        }
-      });
-    }
-  }, [activeSlide, bannersLoading, slides.length, runTextIn, runProgressBar]);
+  };
 
   if (bannersLoading) {
     return (
@@ -273,9 +149,6 @@ const BannerSlider = React.memo(({
       </>
     );
   }
-
-  const currentSlide = slides[activeSlide] || slides[0];
-  if (!currentSlide) return null;
 
   return (
     <>
@@ -374,8 +247,6 @@ const BannerSlider = React.memo(({
             </svg>
           </div>
 
-
-
           {/* ---- CONTENT OVERLAY ---- */}
           <div
             ref={contentRef}
@@ -444,83 +315,21 @@ const BannerSlider = React.memo(({
             </div>
           </div>
 
-          {/* ---- ADMIN EDIT BUTTON ---- */}
-          {isAdmin && (
-            <Link
-              to="/admin-control?tab=config"
-              className="absolute top-5 left-1/2 -translate-x-1/2 z-40 flex items-center gap-1.5 px-4 py-2 bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-400 border border-emerald-500/30 rounded-full text-xs font-bold backdrop-blur-md transition-all hover:scale-105 cursor-pointer animate-pulse"
-            >
-              <Edit3 className="h-3.5 w-3.5" />
-              <span>Edit Banners</span>
-            </Link>
-          )}
-
-          {/* ---- PAGINATION DOT INDICATORS ---- */}
-          <div
-            className="absolute z-40 flex items-center gap-2.5"
-            style={{ bottom: '28px', left: '50%', transform: 'translateX(-50%)' }}
-          >
+          <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-30 flex space-x-3">
             {slides.map((_, idx) => (
               <button
                 key={idx}
                 onClick={() => setActiveSlide(idx)}
-                aria-label={`Go to slide ${idx + 1}`}
-                className="cursor-pointer rounded-full"
-                style={{
-                  width: idx === activeSlide ? '28px' : '8px',
-                  height: '8px',
-                  background: idx === activeSlide ? '#D4A75F' : 'rgba(255,255,255,0.30)',
-                  boxShadow: idx === activeSlide ? '0 0 12px rgba(212,167,95,0.80), 0 0 4px rgba(212,167,95,0.50)' : 'none',
-                  border: 'none', padding: 0,
-                  transition: 'all 0.4s cubic-bezier(0.34,1.56,0.64,1)'
-                }}
+                className={`h-1.5 transition-all duration-300 rounded-full cursor-pointer ${idx === activeSlide ? 'bg-[#D4A75F] w-8' : 'bg-slate-350 hover:bg-slate-200 w-2.5'
+                  }`}
               />
             ))}
           </div>
-
-          {/* ---- ANIMATED GOLD BOTTOM STRIP ---- */}
-          <div
-            className="hero-gold-bottom"
-            style={{ position: 'absolute', bottom: 0, left: 0, right: 0, zIndex: 45, height: '3px', pointerEvents: 'none' }}
-          />
-
-          {/* ---- PROGRESS STRIPS (bottom) ---- */}
-          <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, zIndex: 40, display: 'flex', height: '3px' }}>
-            {slides.map((_, idx) => (
-              <button
-                key={idx}
-                onClick={() => setActiveSlide(idx)}
-                style={{
-                  flex: 1,
-                  background: idx === activeSlide ? 'transparent' : 'rgba(255,255,255,0.18)',
-                  position: 'relative',
-                  cursor: 'pointer',
-                  border: 'none',
-                  padding: 0,
-                  overflow: 'hidden',
-                  transition: 'background 0.3s'
-                }}
-              >
-                {idx === activeSlide && (
-                  <div
-                    ref={progressBarRef}
-                    style={{
-                      position: 'absolute', inset: 0,
-                      background: '#D4A75F',
-                      transformOrigin: 'left center',
-                      transform: 'scaleX(0)'
-                    }}
-                  />
-                )}
-              </button>
-            ))}
-          </div>
-
         </div>
       </div>
 
-      {/* Mobile view */}
-      <div className="block md:hidden w-[94vw] mx-auto mt-[108px] mb-8">
+      {/* Mobile/Tablet view hero banner */}
+      <div className="block md:hidden w-[94vw] mx-auto mt-[24px] mb-8">
         <div className="relative h-[390px] xs:h-[420px] sm:h-[440px] overflow-hidden rounded-[16px] shadow-[0_20px_50px_rgba(27,11,38,0.15)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.5)] border border-[#D4A75F]/15 dark:border-white/5 bg-gradient-to-tr from-[#1B0B26] via-[#3F1D5A] to-[#2E1442]">
           {isAdmin && (
             <Link
@@ -549,9 +358,9 @@ const BannerSlider = React.memo(({
             {slides.map((slide, idx) => (
               <div
                 key={idx}
-                className={`absolute inset-0 bg-gradient-to-tr ${slide.gradient || 'from-[#1B0B26] via-[#3F1D5A] to-[#2E1442]'} transition-opacity duration-1000 ${
-                  idx === activeSlide
-                    ? 'opacity-100 z-10'
+                className={`absolute inset-0 bg-gradient-to-tr ${slide.gradient} transition-opacity duration-1000 ${
+                  idx === activeSlide 
+                    ? 'opacity-100 z-10' 
                     : 'opacity-0 z-0 pointer-events-none'
                 }`}
               >
@@ -560,7 +369,7 @@ const BannerSlider = React.memo(({
                 <div className="absolute top-0 inset-x-0 h-[1px] bg-gradient-to-r from-transparent via-[#D4A75F]/20 to-transparent pointer-events-none" />
 
                 <div className="h-full flex flex-col items-center justify-between text-center pt-5 pb-8 px-4 text-white z-10 relative">
-
+                  
                   <div className="flex flex-col items-center">
                     <motion.h1
                       initial={{ opacity: 0, y: 15 }}
@@ -570,7 +379,7 @@ const BannerSlider = React.memo(({
                     >
                       {slide.title}
                     </motion.h1>
-
+                    
                     <motion.p
                       initial={{ opacity: 0, y: 10 }}
                       animate={idx === activeSlide ? { opacity: 1, y: 0 } : { opacity: 0, y: 10 }}
@@ -639,6 +448,8 @@ const BannerSlider = React.memo(({
 });
 
 const CategoryGrid = React.memo(({ activeCategory, loading, onCategoryClick }) => {
+  const { language } = useContext(AuthContext);
+
   if (loading) {
     return (
       <>
@@ -664,14 +475,17 @@ const CategoryGrid = React.memo(({ activeCategory, loading, onCategoryClick }) =
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, margin: "-100px" }}
         transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-        className="hidden md:block w-full bg-white dark:bg-[#0B1020] border-y border-[#F2E8D9] dark:border-slate-800/80 py-10 transition-colors duration-300"
+        className="hidden md:block w-full bg-white dark:bg-[#0B1020] border-y border-[#F2E8D9] dark:border-slate-800/80 py-10 lg:py-12 transition-colors duration-300"
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-8">
             <h2 className="text-2xl md:text-3xl font-serif font-bold text-[#3F1D5A] dark:text-[#D4A75F] tracking-wider relative inline-block pb-2 transition-colors duration-300">
-              Shop By Category
+              {translateUiLabel("Shop By Category", language)}
               <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-12 h-0.5 bg-[#D4A75F]"></span>
             </h2>
+            <p className="text-xs text-slate-500 dark:text-[#CBD5E1] mt-2 tracking-widest uppercase font-semibold transition-colors duration-300">
+              Discover our exquisite handcrafted masterpieces
+            </p>
           </div>
 
           <div className="flex justify-center items-center gap-8 lg:gap-14 flex-wrap">
@@ -705,7 +519,7 @@ const CategoryGrid = React.memo(({ activeCategory, loading, onCategoryClick }) =
                     >
                       <LuxuryImage
                         src={cat.img}
-                        alt={cat.label}
+                        alt={translateCategory(cat.name, language)}
                         width="76"
                         height="76"
                         wrapperClassName="rounded-full"
@@ -722,7 +536,7 @@ const CategoryGrid = React.memo(({ activeCategory, loading, onCategoryClick }) =
                         ? 'text-[#D4A75F]'
                         : 'text-slate-800 dark:text-[#F8FAFC] group-hover:text-[#D4A75F]'
                     }`}>
-                      {cat.label}
+                      {translateCategory(cat.name, language)}
                     </span>
                   </Link>
                 </motion.div>
@@ -743,7 +557,7 @@ const CategoryGrid = React.memo(({ activeCategory, loading, onCategoryClick }) =
         <div className="w-[94vw] mx-auto px-1">
           <div className="text-center mb-4">
             <h2 className="text-lg font-serif font-bold text-[#3F1D5A] dark:text-[#D4A75F] tracking-wider relative inline-block pb-1.5 transition-colors duration-300">
-              Shop By Category
+              {translateUiLabel("Shop By Category", language)}
               <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-10 h-0.5 bg-[#D4A75F]"></span>
             </h2>
           </div>
@@ -779,7 +593,7 @@ const CategoryGrid = React.memo(({ activeCategory, loading, onCategoryClick }) =
                     >
                       <LuxuryImage
                         src={cat.img}
-                        alt={cat.label}
+                        alt={translateCategory(cat.name, language)}
                         width="68"
                         height="68"
                         wrapperClassName="rounded-full"
@@ -796,7 +610,7 @@ const CategoryGrid = React.memo(({ activeCategory, loading, onCategoryClick }) =
                         ? 'text-[#D4A75F]'
                         : 'text-slate-800 dark:text-[#F8FAFC] group-hover:text-[#D4A75F]'
                     }`}>
-                      {cat.label}
+                      {translateCategory(cat.name, language)}
                     </span>
                   </Link>
                 </motion.div>
@@ -809,80 +623,8 @@ const CategoryGrid = React.memo(({ activeCategory, loading, onCategoryClick }) =
   );
 });
 
-const ProductGridArea = React.memo(({ 
-  products, 
-  loading, 
-  error, 
-  isAdmin, 
-  setSelectedAdminProductId,
-  activeTab
-}) => {
-  if (activeTab !== 'products') return null;
-
-  if (loading) {
-    return (
-      <div className="product-grid">
-        {Array.from({ length: 8 }).map((_, idx) => (
-          <ProductCardSkeleton key={idx} />
-        ))}
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-900 rounded-2xl p-6 text-center max-w-xl mx-auto my-12">
-        <h3 className="text-red-600 dark:text-red-400 font-bold text-lg">Failed to Load Products</h3>
-        <p className="text-slate-500 dark:text-slate-400 text-sm mt-2">{error}</p>
-        <button
-          onClick={() => window.location.reload()}
-          className="mt-4 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-xl text-xs font-bold"
-        >
-          Try Again
-        </button>
-      </div>
-    );
-  }
-
-  if (products.length === 0) {
-    return (
-      <div className="text-center py-20 max-w-md mx-auto">
-        <div className="bg-slate-100 dark:bg-slate-800 p-4 rounded-full w-16 h-16 flex items-center justify-center mx-auto text-slate-400">
-          <ShoppingBag className="h-8 w-8" />
-        </div>
-        <h3 className="text-lg font-bold mt-4">No Products Found</h3>
-        <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">
-          We couldn't find any products matching your current category filter or search query.
-        </p>
-        <button
-          onClick={() => window.location.href = '/'}
-          className="mt-6 px-5 py-2 bg-[#3F1D5A] hover:bg-[#2E1442] text-white rounded-xl text-xs font-bold shadow-md"
-        >
-          View All Products
-        </button>
-      </div>
-    );
-  }
-
-  return (
-    <div className="product-grid">
-      {products.map(product => (
-        <ProductCard
-          key={product._id}
-          product={product}
-          onAdminAction={setSelectedAdminProductId}
-        />
-      ))}
-    </div>
-  );
-});
-
 export const Home = () => {
   const { language, isAdmin } = useContext(AuthContext);
-  const location = useLocation();
-  const [searchParams, setSearchParams] = useSearchParams();
-  const activeCategory = searchParams.get('category') || 'All';
-  const activeSearch = searchParams.get('search') || '';
 
   // Parallax scroll effects for Hero Banner
   const { scrollY } = useScroll();
@@ -1009,8 +751,6 @@ export const Home = () => {
       console.error("Failed to fetch general audit logs:", err);
     }
   };
-
-
 
   useEffect(() => {
     if (isAdmin && activeTab === 'analytics') {
@@ -1167,8 +907,8 @@ export const Home = () => {
             </div>
             <div>
               <span className="text-[10px] text-slate-400 font-bold block uppercase tracking-wider">Total Revenue</span>
-              <span className="text-xl font-black text-slate-850 dark:text-white mt-0.5 block">
-                ₹{(usersAnalytics?.total_revenue ?? 0).toLocaleString('en-IN')}
+              <span className="text-xl font-black text-slate-855 dark:text-white mt-0.5 block">
+                ₹{formatPrice(usersAnalytics?.total_revenue ?? 0)}
               </span>
             </div>
           </div>
@@ -1180,7 +920,7 @@ export const Home = () => {
             <h2 className="text-lg font-black text-slate-800 dark:text-slate-100 flex items-center gap-2">
               <Clock className="h-5 w-5 text-emerald-500" />
               <span>Audit Logs</span>
-              <span className="px-2 py-0.5 text-xs bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-450 rounded-full font-bold">
+              <span className="audit-logs-count-badge">
                 {generalAuditLogs.length} total
               </span>
             </h2>
@@ -1264,10 +1004,10 @@ export const Home = () => {
 
                       return (
                         <tr key={log.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-955/20 transition-all border-b border-slate-100 dark:border-slate-800/50">
-                          <td className="py-3.5 pr-4 font-semibold text-slate-500 dark:text-slate-405 whitespace-nowrap">
+                          <td className="py-3.5 pr-4 text-slate-500 admin-timestamp-text whitespace-nowrap">
                             {date} <span className="text-[10px] text-slate-400 font-normal">{time}</span>
                           </td>
-                          <td className="py-3.5 px-4 font-bold text-slate-800 dark:text-slate-205">
+                          <td className="py-3.5 px-4 text-slate-800 admin-table-text">
                             {log.admin_username}
                           </td>
                           <td className="py-3.5 px-4">
@@ -1275,17 +1015,17 @@ export const Home = () => {
                               {log.action_type}
                             </span>
                           </td>
-                          <td className="py-3.5 px-4 text-slate-600 dark:text-slate-405 font-medium whitespace-nowrap">
+                          <td className="py-3.5 px-4 admin-table-text whitespace-nowrap">
                             {log.module}
                           </td>
-                          <td className="py-3.5 px-4 max-w-[280px] text-slate-600 dark:text-slate-350 truncate font-semibold" title={log.details}>
+                          <td className="py-3.5 px-4 max-w-[280px] admin-table-text truncate" title={log.details}>
                             {log.details}
                           </td>
                           <td className="py-3.5 pl-4">
-                            <span className={`px-2 py-0.5 rounded-lg text-[10px] font-black uppercase ${log.status === 'Success'
-                                ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-450'
-                                : 'bg-rose-100 text-rose-700 dark:bg-rose-950/40 dark:text-rose-455'
-                              }`}>
+                            <span className={log.status === 'Success'
+                              ? 'status-badge-success'
+                              : 'px-2 py-0.5 rounded-lg text-[10px] font-black uppercase bg-rose-100 text-rose-700 dark:bg-rose-950/40 dark:text-rose-455'
+                            }>
                               {log.status}
                             </span>
                           </td>
@@ -1392,8 +1132,8 @@ export const Home = () => {
             </div>
             <div>
               <span className="text-[10px] text-slate-400 font-bold block uppercase tracking-wider">Total Revenue</span>
-              <span className="text-xl font-black text-slate-850 dark:text-white mt-0.5 block">
-                ₹{(usersAnalytics?.total_revenue ?? 0).toLocaleString('en-IN')}
+              <span className="text-xl font-black text-slate-855 dark:text-white mt-0.5 block">
+                ₹{formatPrice(usersAnalytics?.total_revenue ?? 0)}
               </span>
             </div>
           </div>
@@ -1524,7 +1264,7 @@ export const Home = () => {
                           {u.total_orders || 0}
                         </td>
                         <td className="py-4 px-6 text-center font-bold text-emerald-600 dark:text-emerald-400">
-                          ₹{(u.total_spent || 0).toLocaleString('en-IN')}
+                          ₹{formatPrice(u.total_spent || 0)}
                         </td>
                         <td className="py-4 px-6 text-center font-bold text-amber-500">
                           {pendingOrdersCount}
@@ -1533,11 +1273,18 @@ export const Home = () => {
                           {deliveredOrdersCount}
                         </td>
                         <td className="py-4 px-6">
-                          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${u.is_blocked
-                              ? 'bg-rose-500/10 text-rose-500 border-rose-500/20'
-                              : 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20'
-                            }`}>
-                            {u.is_blocked ? 'Blocked' : 'Active'}
+                          <span className={`inline-flex items-center px-[12px] py-[4px] rounded-full text-[10px] font-semibold border shadow-sm ${
+                            (u.status || (u.is_blocked ? "Blocked" : "Active")).toLowerCase() === 'active'
+                              ? 'bg-[#22C55E] text-[#FFFFFF] border-[#16A34A]'
+                              : (u.status || (u.is_blocked ? "Blocked" : "Active")).toLowerCase() === 'inactive'
+                              ? 'bg-[#6B7280] text-[#FFFFFF] border-[#4B5563]'
+                              : (u.status || (u.is_blocked ? "Blocked" : "Active")).toLowerCase() === 'suspended'
+                              ? 'bg-[#EF4444] text-[#FFFFFF] border-[#DC2626]'
+                              : (u.status || (u.is_blocked ? "Blocked" : "Active")).toLowerCase() === 'pending verification'
+                              ? 'bg-[#F59E0B] text-[#FFFFFF] border-[#D97706]'
+                              : 'bg-[#B91C1C] text-[#FFFFFF] border-[#991B1B]'
+                          }`}>
+                            {u.status || (u.is_blocked ? "Blocked" : "Active")}
                           </span>
                         </td>
                         <td className="py-4 px-6 text-center">
@@ -1602,7 +1349,10 @@ export const Home = () => {
     );
   };
 
-
+  const location = useLocation();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const activeCategory = searchParams.get('category') || 'All';
+  const activeSearch = searchParams.get('search') || '';
 
   const handleCategoryClick = useCallback((categoryName, source = 'grid') => {
     const newParams = new URLSearchParams(searchParams);
@@ -1621,12 +1371,13 @@ export const Home = () => {
     }
   }, [searchParams, setSearchParams]);
 
+  // Banner Management States
   const [slides, setSlides] = useState([
     {
       title: "The Solitaire Diamond Collection",
       subtitle: "Eternal Brilliance, Handcrafted Elegance",
       desc: "Explore our signature 18k yellow gold and white gold diamond solitaire rings. Perfect for weddings, proposals, and lifetime memories.",
-      badge: "RINGS",
+      badge: "Rings Special",
       gradient: "from-[#3F1D5A] via-[#2C143F] to-[#1B0B26]",
       accent: "text-[#D4A75F]",
       btnText: "Shop Solitaires",
@@ -1638,7 +1389,7 @@ export const Home = () => {
       title: "The Royal Empress Collection",
       subtitle: "Ornate Emerald & Pearl Artistry",
       desc: "Adorn yourself with masterfully crafted necklaces, chokers, and bridal neckwear set in solid 22k gold and premium gemstones.",
-      badge: "NECKLACES",
+      badge: "Necklaces Special",
       gradient: "from-[#3F1D5A] via-[#5C2E7E] to-[#3F1D5A]",
       accent: "text-[#D4A75F]",
       btnText: "Shop Necklaces",
@@ -1649,7 +1400,7 @@ export const Home = () => {
       title: "Imperial Bridal Heirlooms",
       subtitle: "Maang Tikkas, Polki Sets & Rubies",
       desc: "Celebrate your grand day with timeless heirloom bridal sets, meticulously set with uncut Polki diamonds and fine rubies.",
-      badge: "BRIDAL",
+      badge: "Bridal Special",
       gradient: "from-[#1B0B26] via-[#3F1D5A] to-[#1B0B26]",
       accent: "text-[#D4A75F]",
       btnText: "Explore Bridal Set",
@@ -1679,83 +1430,6 @@ export const Home = () => {
   const [uploadingBannerImage, setUploadingBannerImage] = useState(false);
   const [bannerError, setBannerError] = useState(null);
   const [bannerSuccess, setBannerSuccess] = useState(null);
-
-  // GSAP 3D ScrollTrigger Animations
-  useEffect(() => {
-    if (bannersLoading) return;
-
-    // 1. Hero Slider 3D Scroll tilt & zoom out on scroll down
-    const heroSlider = document.querySelector('.hero-slider-container');
-    if (heroSlider) {
-      gsap.to(heroSlider, {
-        scrollTrigger: {
-          trigger: heroSlider,
-          start: 'top top',
-          end: 'bottom top',
-          scrub: true
-        },
-        scale: 0.92,
-        rotateX: -10,
-        opacity: 0.2,
-        transformOrigin: 'center bottom',
-        ease: 'none'
-      });
-    }
-
-    // 2. Category Grid 3D flip-up reveal
-    const catGrid = document.querySelector('.category-grid-container');
-    const catCards = catGrid ? catGrid.querySelectorAll('.category-card-item') : [];
-    if (catCards.length > 0) {
-      gsap.fromTo(catCards, 
-        { opacity: 0, y: 70, rotateX: -30, transformPerspective: 1000 },
-        { 
-          opacity: 1, 
-          y: 0, 
-          rotateX: 0, 
-          stagger: 0.1,
-          duration: 0.6,
-          ease: 'power2.out',
-          scrollTrigger: {
-            trigger: catGrid,
-            start: 'top 90%',
-            toggleActions: 'play none none none'
-          }
-        }
-      );
-    }
-
-    // 3. Product Cards 3D rotate-reveal stagger
-    const prodGrid = document.querySelector('.product-grid');
-    const prodCards = prodGrid ? prodGrid.querySelectorAll('.product-card-item') : [];
-    if (prodCards.length > 0) {
-      gsap.fromTo(prodCards,
-        { opacity: 0, y: 60, rotateY: -15, scale: 0.95, transformPerspective: 1000 },
-        {
-          opacity: 1,
-          y: 0,
-          rotateY: 0,
-          scale: 1,
-          stagger: 0.08,
-          duration: 0.65,
-          ease: 'power2.out',
-          scrollTrigger: {
-            trigger: prodGrid,
-            start: 'top 85%',
-            toggleActions: 'play none none none'
-          }
-        }
-      );
-    }
-
-    return () => {
-      // Clean up triggers related to these animations
-      ScrollTrigger.getAll().forEach(t => {
-        if (t.vars.trigger === heroSlider || t.vars.trigger === catGrid || t.vars.trigger === prodGrid) {
-          t.kill();
-        }
-      });
-    };
-  }, [products, loading, activeTab, activeCategory, bannersLoading]);
 
   // Auto scroll slides
   useEffect(() => {
@@ -1811,7 +1485,7 @@ export const Home = () => {
               title: "The Solitaire Diamond Collection",
               subtitle: "Eternal Brilliance, Handcrafted Elegance",
               desc: "Explore our signature 18k yellow gold and white gold diamond solitaire rings. Perfect for weddings, proposals, and lifetime memories.",
-              badge: "RINGS",
+              badge: "Rings Special",
               gradient: "from-[#3F1D5A] via-[#2C143F] to-[#1B0B26]",
               accent: "text-[#D4A75F]",
               btnText: "Shop Solitaires",
@@ -1823,7 +1497,7 @@ export const Home = () => {
               title: "The Royal Empress Collection",
               subtitle: "Ornate Emerald & Pearl Artistry",
               desc: "Adorn yourself with masterfully crafted necklaces, chokers, and bridal neckwear set in solid 22k gold and premium gemstones.",
-              badge: "NECKLACES",
+              badge: "Necklaces Special",
               gradient: "from-[#3F1D5A] via-[#5C2E7E] to-[#3F1D5A]",
               accent: "text-[#D4A75F]",
               btnText: "Shop Necklaces",
@@ -1835,7 +1509,7 @@ export const Home = () => {
               title: "Imperial Bridal Heirlooms",
               subtitle: "Maang Tikkas, Polki Sets & Rubies",
               desc: "Celebrate your grand day with timeless heirloom bridal sets, meticulously set with uncut Polki diamonds and fine rubies.",
-              badge: "BRIDAL",
+              badge: "Bridal Special",
               gradient: "from-[#1B0B26] via-[#3F1D5A] to-[#1B0B26]",
               accent: "text-[#D4A75F]",
               btnText: "Explore Bridal Set",
@@ -2068,10 +1742,16 @@ export const Home = () => {
             ) : (
               <>
                 <h2 className="text-2xl font-extrabold tracking-tight">
-                  {activeSearch ? `Search Results for "${activeSearch}"` : `${activeCategory} Products`}
+                  {activeSearch 
+                    ? (language === 'hi' ? `"${activeSearch}" के लिए खोज परिणाम` : `Search Results for "${activeSearch}"`)
+                    : (activeCategory === 'All' 
+                        ? translateUiLabel("All Products", language) 
+                        : `${translateCategory(activeCategory, language)} ${language === 'hi' ? 'उत्पाद' : 'Products'}`
+                      )
+                  }
                 </h2>
                 <p className="text-xs text-slate-400 mt-1">
-                  Showing premium handpicked items in stock.
+                  {translateUiLabel("Showing premium handpicked items in stock.", language)}
                 </p>
               </>
             )}
@@ -2113,11 +1793,11 @@ export const Home = () => {
 
         {/* Error State */}
         {activeTab === 'products' && error && (
-          <div className="bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-900 rounded-2xl p-6 text-center max-w-xl mx-auto my-12">
+          <div className="bg-red-50 dark:bg-red-955/20 border border-red-200 dark:border-red-900 rounded-2xl p-6 text-center max-w-xl mx-auto my-12">
             <h3 className="text-red-600 dark:text-red-400 font-bold text-lg">Failed to Load Products</h3>
             <p className="text-slate-555 dark:text-slate-400 text-sm mt-2">{error}</p>
             <button
-              onClick={() => window.location.reload()}
+              onClick={() => setRefreshTrigger(prev => prev + 1)}
               className="mt-4 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-xl text-xs font-bold"
             >
               Try Again
@@ -2157,13 +1837,11 @@ export const Home = () => {
             className="product-grid"
           >
             {products.map(product => (
-              <div key={product._id} className="product-card-item">
-                <ProductCard
-                  key={product._id}
-                  product={product}
-                  onAdminAction={(productId) => setSelectedAdminProductId(productId)}
-                />
-              </div>
+              <ProductCard
+                key={product._id}
+                product={product}
+                onAdminAction={(productId) => setSelectedAdminProductId(productId)}
+              />
             ))}
           </motion.div>
         )}
@@ -2506,7 +2184,7 @@ export const Home = () => {
                   <div>
                     <span className="text-[10px] text-slate-400 font-bold block uppercase">Total Spending</span>
                     <span className="text-sm font-black text-slate-850 dark:text-white">
-                      ₹{selectedUserForDetails.total_spent.toLocaleString('en-IN')}
+                      ₹{formatPrice(selectedUserForDetails.total_spent)}
                     </span>
                   </div>
                 </div>
@@ -2599,7 +2277,7 @@ export const Home = () => {
                                 {order.items?.reduce((sum, item) => sum + item.quantity, 0) || 0}
                               </td>
                               <td className="py-3 px-2 text-right font-black text-emerald-500 font-mono">
-                                ₹{order.total_amount.toLocaleString('en-IN')}
+                                ₹{formatPrice(order.total_amount)}
                               </td>
                               <td className="py-3 px-2 text-center text-slate-500 dark:text-slate-400 font-bold">
                                 {order.payment_method}
@@ -2608,12 +2286,21 @@ export const Home = () => {
                                 {date}
                               </td>
                               <td className="py-3 px-2 text-center">
-                                <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold border ${order.order_status === 'Delivered'
-                                    ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20'
-                                    : order.order_status === 'Cancelled'
-                                      ? 'bg-rose-500/10 text-rose-500 border-rose-500/20'
-                                      : 'bg-amber-500/10 text-amber-500 border-amber-500/20'
-                                  }`}>
+                                <span className={`inline-flex items-center px-[12px] py-[4px] rounded-full text-[10px] font-semibold border shadow-sm ${
+                                  (order.order_status || '').toLowerCase() === 'pending'
+                                    ? 'status-badge-pending'
+                                    : (order.order_status || '').toLowerCase() === 'processing' || (order.order_status || '').toLowerCase() === 'confirmed' || (order.order_status || '').toLowerCase() === 'packed'
+                                    ? 'bg-[#3B82F6] text-white border-[#2563EB]'
+                                    : (order.order_status || '').toLowerCase() === 'shipped' || (order.order_status || '').toLowerCase() === 'dispatched'
+                                    ? 'bg-[#06B6D4] text-white border-[#0891B2]'
+                                    : (order.order_status || '').toLowerCase() === 'out for delivery'
+                                    ? 'bg-[#8B5CF6] text-white border-[#7C3AED]'
+                                    : (order.order_status || '').toLowerCase() === 'delivered'
+                                    ? 'status-badge-success'
+                                    : (order.order_status || '').toLowerCase() === 'cancelled'
+                                    ? 'bg-[#EF4444] text-white border-[#DC2626]'
+                                    : 'bg-[#6B7280] text-white border-[#4B5563]'
+                                }`}>
                                   {order.order_status}
                                 </span>
                               </td>
