@@ -164,7 +164,7 @@ function App() {
       </main>
 
       {/* Global Video Footer */}
-      <GlobalVideoFooter />
+      {!location.pathname.startsWith('/admin') && <GlobalVideoFooter />}
 
       {/* Interactive chatbot bubble widget */}
       <LiveChat />
