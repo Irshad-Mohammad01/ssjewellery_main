@@ -1785,7 +1785,7 @@ export const Home = () => {
 
       {/* Premium Video Showcase Section */}
       <div 
-        className="relative h-[320px] sm:h-[480px] md:h-[540px] overflow-hidden bg-black -mt-20 -mb-16"
+        className="relative h-[320px] sm:h-[480px] md:h-[540px] overflow-hidden bg-black mt-16 mb-8"
         style={{
           width: '100vw',
           position: 'relative',
