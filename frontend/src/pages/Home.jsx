@@ -124,6 +124,16 @@ const BannerSlider = React.memo(({
   bannersLoading,
   onCategoryClick
 }) => {
+  const slideRefs = React.useRef([]);
+  const contentRef = React.useRef(null);
+  const badgeRef = React.useRef(null);
+  const titleRef = React.useRef(null);
+  const subtitleRef = React.useRef(null);
+  const descRef = React.useRef(null);
+  const btnRef = React.useRef(null);
+
+  const currentSlide = slides[activeSlide] || {};
+
   const handleBannerButtonClick = (e, slide) => {
     const link = slide.btnLink || `/?category=${slide.catFilter}`;
     if (link.startsWith('/?category=') || link === '/') {
