@@ -163,7 +163,7 @@ function App() {
         </AnimatePresence>
       </main>
 
-      {/* Global Video Footer */}
+      {/* Global Video Footer - Only shown on user side, hidden on admin side */}
       {!location.pathname.startsWith('/admin') && <GlobalVideoFooter />}
 
       {/* Interactive chatbot bubble widget */}
