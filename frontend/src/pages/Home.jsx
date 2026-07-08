@@ -240,7 +240,7 @@ const SearchSpotlight = ({ products, language }) => {
           )}
 
           {/* 2. Main Center Stand (Highlighted) */}
-          <div className="relative z-20 scale-[0.95] md:scale-110 transform transition-transform duration-500 hover:scale-[1.03] md:hover:scale-[1.12]">
+          <div className="relative z-20 scale-[0.7] xs:scale-[0.8] sm:scale-[0.9] md:scale-110 transform transition-transform duration-500 hover:scale-[1.03] md:hover:scale-[1.12]">
             <div className="relative flex flex-col items-center">
               
               {/* Mannequin Bust */}
