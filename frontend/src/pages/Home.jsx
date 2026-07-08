@@ -1880,8 +1880,8 @@ export const Home = () => {
 
       {!activeSearch && !isAdmin && activeTab === 'products' && (
         <>
-          <GoldCalculator />
           <TrustShowcase />
+          <GoldCalculator />
         </>
       )}
 
