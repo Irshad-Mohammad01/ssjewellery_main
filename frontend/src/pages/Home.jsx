@@ -1567,12 +1567,7 @@ export const Home = () => {
         />
       )}
 
-      {!activeSearch && !isAdmin && activeTab === 'products' && (
-        <>
-          <GoldCalculator />
-          <TrustShowcase />
-        </>
-      )}
+
 
 
       {/* Main Content Area */}
@@ -1882,6 +1877,13 @@ export const Home = () => {
           </motion.div>
         </div>
       </div>
+
+      {!activeSearch && !isAdmin && activeTab === 'products' && (
+        <>
+          <GoldCalculator />
+          <TrustShowcase />
+        </>
+      )}
 
       {/* Admin Panel Modal */}
       {selectedAdminProductId && (
