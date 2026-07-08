@@ -50,6 +50,9 @@ export const GlobalVideoFooter = () => {
                 stroke-dashoffset: 1200;
                 animation: drawTrace 12s linear infinite, glowPulse 4s ease-in-out infinite alternate;
               }
+              .blur-breathing {
+                animation: breathingBlur 5s ease-in-out infinite alternate;
+              }
               @keyframes drawTrace {
                 0% { stroke-dashoffset: 2400; }
                 100% { stroke-dashoffset: 0; }
@@ -58,9 +61,37 @@ export const GlobalVideoFooter = () => {
                 0% { filter: drop-shadow(0 0 2px rgba(212, 167, 95, 0.35)); }
                 100% { filter: drop-shadow(0 0 10px rgba(212, 167, 95, 0.75)); }
               }
+              @keyframes breathingBlur {
+                0% {
+                  filter: blur(2px);
+                  opacity: 0.45;
+                }
+                100% {
+                  filter: blur(15px);
+                  opacity: 0.95;
+                }
+              }
             `}</style>
           </defs>
           
+          {/* Glowing background blur layer (Moah-style glow) */}
+          <text
+            x="50%"
+            y="50%"
+            textAnchor="middle"
+            dominantBaseline="middle"
+            fill="#D4A75F"
+            fontSize="240"
+            fontWeight="950"
+            fontFamily="'Outfit', 'Inter', sans-serif"
+            letterSpacing="0.08em"
+            textLength="1300"
+            lengthAdjust="spacingAndGlyphs"
+            className="pointer-events-none blur-breathing"
+          >
+            SS JEWELLERY
+          </text>
+
           <foreignObject x="0" y="0" width="100%" height="100%" mask="url(#text-mask)">
             <video
               autoPlay
