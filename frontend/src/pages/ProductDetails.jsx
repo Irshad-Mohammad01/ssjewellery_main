@@ -1363,7 +1363,7 @@ export const ProductDetails = ({ productId }) => {
       
       {/* Header Bar */}
       {!productId && (
-        <div className="bg-white dark:bg-slate-900 border-b border-slate-100 dark:border-slate-800/80 py-3 mb-4 w-full">
+        <div className={`bg-white dark:bg-slate-900 border-b border-slate-100 dark:border-slate-800/80 py-3 mb-4 w-full ${(isAdmin && !isPreviewMode) ? 'hidden md:block' : 'block'}`}>
           <div className="max-w-[1700px] mx-auto px-4 md:px-6 flex flex-col md:flex-row md:items-center justify-between gap-3">
             <div className="flex flex-col space-y-0.5">
               <div className="flex items-center text-xs text-slate-500 dark:text-slate-400 font-medium mb-1">
