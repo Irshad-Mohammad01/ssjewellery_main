@@ -13,8 +13,7 @@ import { formatPrice } from '../utils/priceFormatter';
 import { translateCategory, translateUiLabel } from '../utils/categoryTranslations';
 import { GoldCalculator } from '../components/GoldCalculator';
 import { TrustShowcase } from '../components/TrustShowcase';
-import { RingSizer } from '../components/RingSizer';
-import { BespokeConsultation } from '../components/BespokeConsultation';
+import { LuxuryGallery } from '../components/LuxuryGallery';
 
 
 const ACTION_TYPES = [
@@ -1801,8 +1800,7 @@ export const Home = () => {
 
       {!activeSearch && !isAdmin && activeTab === 'products' && (
         <>
-          <RingSizer />
-          <BespokeConsultation />
+          <LuxuryGallery />
           <TrustShowcase />
           <GoldCalculator />
         </>
