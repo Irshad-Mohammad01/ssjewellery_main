@@ -141,6 +141,12 @@ class ProductModel(db.Model):
 
     @staticmethod
     def get_all(category=None, search_query=None, homepage_only=False):
+        from backend.utils.cache import products_cache
+        cache_key = f"all_{category or 'None'}_{search_query or 'None'}_{homepage_only}"
+        cached_val = products_cache.get(cache_key)
+        if cached_val is not None:
+            return cached_val
+
         from sqlalchemy.orm import joinedload
         query = ProductModel.query.options(
             joinedload(ProductModel.category),
@@ -169,7 +175,9 @@ class ProductModel(db.Model):
             )
             
         products = query.all()
-        return [p.to_dict() for p in products]
+        result = [p.to_dict() for p in products]
+        products_cache.set(cache_key, result)
+        return result
 
     @staticmethod
     def find_by_id(product_id):

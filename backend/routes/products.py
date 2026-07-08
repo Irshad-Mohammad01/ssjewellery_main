@@ -167,9 +167,10 @@ def create_product():
     data["admin_name"] = admin_name
     product = ProductModel.create_product(data)
     
-    # Invalidate category cache
-    from backend.utils.cache import categories_cache
+    # Invalidate category and product cache
+    from backend.utils.cache import categories_cache, products_cache
     categories_cache.clear()
+    products_cache.clear()
     
     # Audit Log
     from backend.utils.audit import log_admin_action
@@ -202,9 +203,10 @@ def update_product(id):
     data["admin_name"] = admin_name
     updated_product = ProductModel.update_product(id, data)
     
-    # Invalidate category cache
-    from backend.utils.cache import categories_cache
+    # Invalidate category and product cache
+    from backend.utils.cache import categories_cache, products_cache
     categories_cache.clear()
+    products_cache.clear()
     
     # Audit Log
     from backend.utils.audit import log_admin_action
@@ -240,9 +242,10 @@ def delete_product(id):
     if not success:
         return jsonify({"message": "Failed to delete product."}), 500
         
-    # Invalidate category cache
-    from backend.utils.cache import categories_cache
+    # Invalidate category and product cache
+    from backend.utils.cache import categories_cache, products_cache
     categories_cache.clear()
+    products_cache.clear()
         
     # Audit Log
     from backend.utils.audit import log_admin_action

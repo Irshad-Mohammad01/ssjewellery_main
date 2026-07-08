@@ -12,6 +12,49 @@ from backend.models.product import ProductModel
 CHARTS_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'static', 'uploads', 'charts')
 os.makedirs(CHARTS_DIR, exist_ok=True)
 
+import time
+from functools import wraps
+
+def cache_chart_file(timeout=600):
+    def decorator(f):
+        @wraps(f)
+        def wrapper(*args, **kwargs):
+            func_name = f.__name__
+            if func_name == "generate_top_selling_chart":
+                filename = "top_selling_products.png"
+            elif func_name == "generate_low_stock_chart":
+                filename = "low_stock_inventory.png"
+            elif func_name == "generate_revenue_trend_chart":
+                filename = "revenue_trend.png"
+            elif func_name == "generate_sales_chart":
+                filename = "sales_volume_trend.png"
+            elif func_name == "generate_orders_chart":
+                filename = "orders_volume_trend.png"
+            elif func_name == "generate_product_sales_chart":
+                filename = f"product_{args[0]}_sales.png"
+            elif func_name == "generate_product_revenue_chart":
+                filename = f"product_{args[0]}_revenue.png"
+            elif func_name == "generate_product_orders_chart":
+                filename = f"product_{args[0]}_orders.png"
+            elif func_name == "generate_product_stock_chart":
+                filename = f"product_{args[0]}_stock.png"
+            else:
+                return f(*args, **kwargs)
+            
+            filepath = os.path.join(CHARTS_DIR, filename)
+            if os.path.exists(filepath):
+                try:
+                    mtime = os.path.getmtime(filepath)
+                    if time.time() - mtime < timeout:
+                        return f"/static/uploads/charts/{filename}"
+                except Exception:
+                    pass
+            
+            return f(*args, **kwargs)
+        return wrapper
+    return decorator
+
+
 # Styling Helper
 def apply_premium_style():
     plt.style.use('seaborn-v0_8-whitegrid' if 'seaborn-v0_8-whitegrid' in plt.style.available else 'default')
@@ -23,6 +66,7 @@ def apply_premium_style():
     plt.rcParams['grid.linestyle'] = '-'
     plt.rcParams['grid.linewidth'] = 0.5
 
+@cache_chart_file()
 def generate_product_sales_chart(product_id):
     apply_premium_style()
     prod_id = int(product_id)
@@ -87,6 +131,7 @@ def generate_product_sales_chart(product_id):
 
     return f"/static/uploads/charts/{filename}"
 
+@cache_chart_file()
 def generate_top_selling_chart():
     apply_premium_style()
     # Query sales count per product
@@ -144,6 +189,7 @@ def generate_top_selling_chart():
 
     return f"/static/uploads/charts/{filename}"
 
+@cache_chart_file()
 def generate_low_stock_chart():
     apply_premium_style()
     # Query products with stock below 10
@@ -195,6 +241,7 @@ def generate_low_stock_chart():
 
     return f"/static/uploads/charts/{filename}"
 
+@cache_chart_file()
 def generate_revenue_trend_chart():
     apply_premium_style()
     # Query all orders (excluding cancelled)
@@ -336,6 +383,7 @@ def get_product_sales_stats(product_id):
         "total_sales": int(total_sales)
     }
 
+@cache_chart_file()
 def generate_sales_chart():
     apply_premium_style()
     # Query order items (excluding cancelled)
@@ -393,6 +441,7 @@ def generate_sales_chart():
 def generate_revenue_chart():
     return generate_revenue_trend_chart()
 
+@cache_chart_file()
 def generate_orders_chart():
     apply_premium_style()
     # Query order counts (excluding cancelled)
@@ -444,6 +493,7 @@ def generate_orders_chart():
 
     return f"/static/uploads/charts/{filename}"
 
+@cache_chart_file()
 def generate_product_revenue_chart(product_id):
     apply_premium_style()
     prod_id = int(product_id)
@@ -497,6 +547,7 @@ def generate_product_revenue_chart(product_id):
 
     return f"/static/uploads/charts/{filename}"
 
+@cache_chart_file()
 def generate_product_orders_chart(product_id):
     apply_premium_style()
     prod_id = int(product_id)
@@ -548,6 +599,7 @@ def generate_product_orders_chart(product_id):
 
     return f"/static/uploads/charts/{filename}"
 
+@cache_chart_file()
 def generate_product_stock_chart(product_id):
     apply_premium_style()
     prod_id = int(product_id)

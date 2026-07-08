@@ -500,18 +500,49 @@ class UserModel(db.Model):
     @staticmethod
     def find_all():
         try:
-            from sqlalchemy.orm import selectinload, joinedload
+            from sqlalchemy.orm import selectinload
             users = UserModel.query.options(
-                selectinload(UserModel.addresses),
-                selectinload(UserModel.wishlist_items).joinedload(Wishlist.product),
-                selectinload(UserModel.cart).selectinload(Cart.items).joinedload(CartItem.product)
+                selectinload(UserModel.addresses)
             ).all()
             user_list = []
             for u in users:
-                d = u.to_dict()
-                user_list.append(d)
+                addr = u.address
+                addr_dict = {
+                    "id": addr.id if addr else None,
+                    "house_number": addr.house_number if addr else "",
+                    "building_name": addr.building_name if addr else "",
+                    "street": addr.street if addr else "",
+                    "area": addr.area if addr else "",
+                    "landmark": addr.landmark if addr else "",
+                    "city": addr.city if addr else "",
+                    "state": addr.state if addr else "",
+                    "pincode": addr.pincode if addr else "",
+                    "address_type": addr.address_type if addr else "Home",
+                    "is_default": addr.is_default if addr else False,
+                    "alternate_mobile_number": addr.alternate_mobile_number if addr else ""
+                }
+                user_list.append({
+                    "id": str(u.id),
+                    "_id": str(u.id),
+                    "name": u.name,
+                    "email": u.email,
+                    "mobile": u.mobile or "",
+                    "address": addr_dict,
+                    "is_blocked": bool(u.is_blocked),
+                    "is_admin": bool(u.is_admin),
+                    "is_verified": bool(u.is_verified),
+                    "created_at": format_iso_datetime(u.created_at),
+                    "last_login": format_iso_datetime(u.last_login),
+                    "microsoft_id": u.microsoft_id,
+                    "provider": u.provider or "local",
+                    "provider_id": u.provider_id,
+                    "preferred_language": u.preferred_language,
+                    "first_login": bool(u.first_login),
+                    "role": "admin" if u.is_admin else "customer"
+                })
             return user_list
-        except Exception:
+        except Exception as e:
+            print("Error in find_all:", e)
             return []
 
     @staticmethod

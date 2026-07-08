@@ -37,3 +37,5 @@ class SimpleCache:
 categories_cache = SimpleCache(default_timeout=300)
 banners_cache = SimpleCache(default_timeout=300)
 category_attributes_cache = SimpleCache(default_timeout=3600)  # Category attributes are static, cache for 1 hr
+products_cache = SimpleCache(default_timeout=300)
+
