@@ -53,7 +53,7 @@ export const GlobalVideoFooter = () => {
           </defs>
 
           {/* Blurred shadow/glow layer underneath */}
-          <text
+          <motion.text
             x="50%"
             y="50%"
             textAnchor="middle"
@@ -70,13 +70,16 @@ export const GlobalVideoFooter = () => {
             lengthAdjust="spacingAndGlyphs"
             className="pointer-events-none"
             filter="url(#luxuryBlur)"
-            opacity="0.85"
+            initial={{ filter: 'blur(30px)', opacity: 0, scale: 0.94 }}
+            whileInView={{ filter: 'blur(0px)', opacity: 0.85, scale: 1 }}
+            viewport={{ once: true, margin: "-40px" }}
+            transition={{ duration: 1.8, ease: [0.16, 1, 0.3, 1] }}
           >
             SS JEWELLERY
-          </text>
+          </motion.text>
 
           {/* Sharp text layer on top with dynamic fill, outline and draw animation */}
-          <text
+          <motion.text
             x="50%"
             y="50%"
             textAnchor="middle"
@@ -92,9 +95,13 @@ export const GlobalVideoFooter = () => {
             textLength="1300"
             lengthAdjust="spacingAndGlyphs"
             className="pointer-events-none animated-outline"
+            initial={{ filter: 'blur(22px)', opacity: 0, scale: 0.94 }}
+            whileInView={{ filter: 'blur(0px)', opacity: 1, scale: 1 }}
+            viewport={{ once: true, margin: "-40px" }}
+            transition={{ duration: 1.8, ease: [0.16, 1, 0.3, 1] }}
           >
             SS JEWELLERY
-          </text>
+          </motion.text>
         </svg>
       </div>
 
