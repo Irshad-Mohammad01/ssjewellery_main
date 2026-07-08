@@ -157,10 +157,10 @@ export const LuxuryGallery = () => {
   }[language === 'hi' ? 'hi' : 'en'];
 
   return (
-    <section className="relative w-full overflow-hidden py-16 bg-[#040209] dark:bg-[#040209] transition-colors duration-300">
+    <section className="relative w-full overflow-hidden py-16 bg-transparent transition-colors duration-300">
       {/* Background Ornamentation */}
-      <div className="absolute top-1/2 left-1/4 w-[600px] h-[600px] bg-[#3F1D5A]/10 rounded-full blur-[140px] pointer-events-none -translate-y-1/2" />
-      <div className="absolute top-1/3 right-1/4 w-[500px] h-[500px] bg-[#D4A75F]/5 rounded-full blur-[120px] pointer-events-none" />
+      <div className="absolute top-1/2 left-1/4 w-[600px] h-[600px] bg-[#3F1D5A]/5 dark:bg-[#3F1D5A]/10 rounded-full blur-[140px] pointer-events-none -translate-y-1/2" />
+      <div className="absolute top-1/3 right-1/4 w-[500px] h-[500px] bg-[#D4A75F]/3 dark:bg-[#D4A75F]/5 rounded-full blur-[120px] pointer-events-none" />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         
@@ -176,10 +176,10 @@ export const LuxuryGallery = () => {
             {language === 'hi' ? 'द इंपीरियल लुकबुक' : 'The Imperial Lookbook'}
           </motion.div>
           
-          <h2 className="text-2xl sm:text-4xl font-serif font-bold text-white tracking-wide">
+          <h2 className="text-2xl sm:text-4xl font-serif font-bold text-[#3F1D5A] dark:text-[#EFE7DB] tracking-wide">
             {language === 'hi' ? 'शाही शिल्प कौशल की झलक' : 'Glimpses of Royal Craftsmanship'}
           </h2>
-          <p className="text-xs sm:text-sm text-slate-400 mt-3 max-w-xl mx-auto">
+          <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-3 max-w-xl mx-auto">
             {language === 'hi' 
               ? 'प्रत्येक कृति हमारी सदियों पुरानी शिल्प कौशल और विलासिता की विरासत की गवाही देती है।' 
               : 'Each masterpiece is a testimony to our centuries-old heritage of artistry and luxury design.'
@@ -217,12 +217,12 @@ export const LuxuryGallery = () => {
               animate={{ scale: 1, y: 0 }}
               exit={{ scale: 0.9, y: 20 }}
               transition={{ type: "spring", damping: 25, stiffness: 200 }}
-              className="bg-slate-950 border border-slate-800 rounded-3xl w-full max-w-5xl overflow-hidden flex flex-col md:flex-row max-h-[85vh] shadow-2xl relative"
+              className="bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-850 rounded-3xl w-full max-w-5xl overflow-hidden flex flex-col md:flex-row max-h-[85vh] shadow-2xl relative"
             >
               {/* Close Button */}
               <button
                 onClick={() => setSelectedItem(null)}
-                className="absolute top-4 right-4 z-[210] p-2.5 rounded-full bg-black/60 text-white hover:bg-amber-500/20 border border-white/10 hover:text-[#D4A75F] transition-all cursor-pointer"
+                className="absolute top-4 right-4 z-[210] p-2.5 rounded-full bg-slate-100 dark:bg-black/60 text-slate-700 dark:text-white hover:bg-amber-500/20 border border-slate-200 dark:border-white/10 hover:text-[#D4A75F] transition-all cursor-pointer"
               >
                 <X className="h-5 w-5" />
               </button>
@@ -240,26 +240,26 @@ export const LuxuryGallery = () => {
               </div>
 
               {/* Right Side: Specifications & Look Details */}
-              <div className="md:w-2/5 p-6 sm:p-8 flex flex-col justify-between overflow-y-auto bg-slate-950">
+              <div className="md:w-2/5 p-6 sm:p-8 flex flex-col justify-between overflow-y-auto bg-white dark:bg-slate-950">
                 <div className="space-y-6">
                   <div>
                     <span className="text-[10px] font-extrabold uppercase tracking-widest text-[#D4A75F] block mb-1">
                       {selectedItem.tag}
                     </span>
-                    <h3 className="text-xl sm:text-2xl font-serif font-black text-white leading-tight">
+                    <h3 className="text-xl sm:text-2xl font-serif font-black text-[#3F1D5A] dark:text-[#EFE7DB] leading-tight">
                       {selectedItem.title}
                     </h3>
                   </div>
 
-                  <p className="text-xs sm:text-sm text-slate-350 leading-relaxed">
+                  <p className="text-xs sm:text-sm text-slate-650 dark:text-slate-350 leading-relaxed">
                     {selectedItem.description}
                   </p>
 
                   <div className="space-y-3">
-                    <h4 className="text-xs font-bold uppercase tracking-wider text-slate-300 border-b border-slate-800 pb-2">
+                    <h4 className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 border-b border-slate-200 dark:border-slate-800 pb-2">
                       {language === 'hi' ? 'सामग्री विवरण' : 'Composition Details'}
                     </h4>
-                    <ul className="space-y-2 text-xs text-slate-400">
+                    <ul className="space-y-2 text-xs text-slate-550 dark:text-slate-400">
                       {selectedItem.details.map((spec, i) => (
                         <li key={i} className="flex items-center gap-2">
                           <span className="w-1 h-1 rounded-full bg-[#D4A75F]" />
@@ -271,7 +271,7 @@ export const LuxuryGallery = () => {
                 </div>
 
                 {/* Footer Action */}
-                <div className="pt-6 border-t border-slate-800 mt-6">
+                <div className="pt-6 border-t border-slate-200 dark:border-slate-800 mt-6">
                   <button
                     onClick={() => setSelectedItem(null)}
                     className="w-full py-3.5 bg-gradient-to-r from-[#D4A75F] to-[#BF934B] hover:from-[#E4B76F] hover:to-[#CF9F52] text-slate-950 text-xs font-black uppercase tracking-widest rounded-xl transition-all shadow-lg shadow-amber-500/5 cursor-pointer"
