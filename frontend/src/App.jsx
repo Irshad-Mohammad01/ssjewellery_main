@@ -74,9 +74,11 @@ function App() {
     });
   }, [location.pathname]);
 
-  // Global Image Click-to-Zoom Listener
+  // Global Image Click-to-Zoom Listener (desktop only — disabled on mobile)
   React.useEffect(() => {
     const handleImageClick = (e) => {
+      if (window.matchMedia('(max-width: 767px)').matches) return;
+
       const img = e.target.closest('img');
       if (!img) return;
 
@@ -92,6 +94,8 @@ function App() {
         img.closest('.navbar-brand-logo') ||
         img.closest('.language-modal-ref') ||
         img.closest('.notification-container-ref') ||
+        img.closest('.product-grid') ||
+        img.closest('.product-gallery-section') ||
         img.offsetWidth < 60 ||
         img.offsetHeight < 60
       ) {
@@ -111,13 +115,15 @@ function App() {
   return (
     <>
       <style dangerouslySetInnerHTML={{__html: `
-        /* Magnifying glass hover hint on product/gallery graphics */
-        img:not(.no-zoom):not([src*="logo.svg"]):not([src*="avatar"]):not([src*="flag"]) {
-          cursor: zoom-in;
-          transition: filter 0.25s ease;
-        }
-        img:not(.no-zoom):not([src*="logo.svg"]):not([src*="avatar"]):not([src*="flag"]):hover {
-          filter: brightness(1.04);
+        /* Magnifying glass hover hint on product/gallery graphics (desktop only) */
+        @media (min-width: 768px) {
+          img:not(.no-zoom):not([src*="logo.svg"]):not([src*="avatar"]):not([src*="flag"]) {
+            cursor: zoom-in;
+            transition: filter 0.25s ease;
+          }
+          img:not(.no-zoom):not([src*="logo.svg"]):not([src*="avatar"]):not([src*="flag"]):hover {
+            filter: brightness(1.04);
+          }
         }
         /* Exclude interface elements from custom cursor */
         .navbar img, 

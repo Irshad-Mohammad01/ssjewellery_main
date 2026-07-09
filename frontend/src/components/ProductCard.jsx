@@ -65,7 +65,7 @@ export const ProductCard = React.memo(({ product, onAdminAction }) => {
         <LuxuryImage
           src={product.images[0] || 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=800&auto=format&fit=crop&q=60'}
           alt={localize(product, 'name')}
-          className={`w-full h-full object-cover transition-all duration-700 ease-in-out ${
+          className={`no-zoom w-full h-full object-cover transition-all duration-700 ease-in-out ${
             product.images && product.images.length > 1
               ? 'group-hover:scale-108 group-hover:opacity-0'
               : 'group-hover:scale-108'
@@ -80,7 +80,7 @@ export const ProductCard = React.memo(({ product, onAdminAction }) => {
             <LuxuryImage
               src={product.images[1]}
               alt={`${localize(product, 'name')} - Alternate`}
-              className="w-full h-full object-cover transition-all duration-700 ease-in-out scale-102 group-hover:scale-108"
+              className="no-zoom w-full h-full object-cover transition-all duration-700 ease-in-out scale-102 group-hover:scale-108"
               loading="lazy"
               width="600"
               height="600"

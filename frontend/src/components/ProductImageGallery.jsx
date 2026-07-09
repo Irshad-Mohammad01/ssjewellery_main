@@ -159,8 +159,11 @@ export const ProductImageGallery = ({ images = [], productName = 'Product' }) =>
           }}
           onTouchStart={handleTouchStart}
           onTouchEnd={handleTouchEnd}
-          onClick={() => setIsFullscreenOpen(true)}
-          className="relative w-full h-auto flex items-center justify-center cursor-zoom-in"
+          onClick={() => {
+            if (window.matchMedia('(max-width: 767px)').matches) return;
+            setIsFullscreenOpen(true);
+          }}
+          className="relative w-full h-auto flex items-center justify-center md:cursor-zoom-in"
         >
           <img
             ref={imgRef}
@@ -194,7 +197,7 @@ export const ProductImageGallery = ({ images = [], productName = 'Product' }) =>
               setIsFullscreenOpen(true);
             }}
             aria-label="Open fullscreen image viewer"
-            className={`absolute bottom-4 right-4 p-2.5 rounded-full bg-slate-900/60 hover:bg-slate-900/80 text-white backdrop-blur-sm transition-all focus:outline-none focus:ring-2 focus:ring-[#D4A75F] z-30 ${
+            className={`hidden md:flex absolute bottom-4 right-4 p-2.5 rounded-full bg-slate-900/60 hover:bg-slate-900/80 text-white backdrop-blur-sm transition-all focus:outline-none focus:ring-2 focus:ring-[#D4A75F] z-30 ${
               imageLoaded ? 'opacity-100' : 'opacity-0'
             }`}
           >

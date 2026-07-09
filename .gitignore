@@ -41,3 +41,9 @@ Thumbs.db
 
 # Scratch directories
 scratch/
+
+# Git backup directory (contains large pack files)
+.git_backup/
+
+# BB duplicate directory (has its own .git)
+BB/

@@ -1497,7 +1497,7 @@ export const ProductDetails = ({ productId }) => {
                  <div className="block md:hidden w-full px-1">
                    {/* Breadcrumb */}
                    <div className="flex items-center text-xs text-slate-500 dark:text-slate-400 font-medium mb-4">
-                     <span className="cursor-pointer hover:text-emerald-500" onClick={() => navigate('/admin')}>{language === 'hi' ? 'उत्पाद' : 'Products'}</span>
+                     <span className="cursor-pointer hover:text-[#D4A75F]" onClick={() => navigate(`/?category=${encodeURIComponent(product.category || 'All')}`)}>{language === 'hi' ? 'उत्पाद' : 'Products'}</span>
                      <ChevronRight className="h-3 w-3 mx-1 text-slate-400" />
                      <span className="text-slate-700 dark:text-slate-330 font-bold">{language === 'hi' ? 'उत्पाद विवरण' : 'Product Details'}</span>
                    </div>
@@ -2030,7 +2030,7 @@ export const ProductDetails = ({ productId }) => {
           <div className="flex items-center text-xs text-slate-500 dark:text-slate-400 font-medium py-3 border-b border-slate-100 dark:border-slate-900 mb-6">
             <span className="cursor-pointer hover:text-[#D4A75F] transition-colors" onClick={() => navigate('/')}>{language === 'hi' ? 'होम' : 'Home'}</span>
             <ChevronRight className="h-3 w-3 mx-1 text-slate-400" />
-            <span className="cursor-pointer hover:text-[#D4A75F] capitalize transition-colors" onClick={() => navigate(`/category/${product.category}`)}>{translateCategory(product.category)}</span>
+            <span className="cursor-pointer hover:text-[#D4A75F] capitalize transition-colors" onClick={() => navigate(`/?category=${encodeURIComponent(product.category)}`)}>{translateCategory(product.category)}</span>
             <ChevronRight className="h-3 w-3 mx-1 text-slate-400" />
             <span className="text-[#D4A75F] font-bold truncate max-w-[200px] md:max-w-xs">{language === 'hi' ? (product.name_hi || product.name) : (product.name_en || product.name)}</span>
           </div>
@@ -2039,12 +2039,13 @@ export const ProductDetails = ({ productId }) => {
             {/* LEFT COLUMN: Gallery & Trust Section */}
             <div className="col-span-1 md:col-span-6 lg:col-span-5 space-y-6 w-full">
               {/* Product Gallery Container */}
-              <div className="flex flex-col gap-3 md:gap-4 select-none w-full">
+              <div className="flex flex-col gap-3 md:gap-4 select-none w-full product-gallery-section">
                 {/* Main Large Image Card with Zoom */}
                 <div className="w-full bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl p-4 md:p-5 relative group z-30 flex items-center justify-center">
                   <div 
-                    className="relative w-full h-[480px] flex items-center justify-center overflow-hidden rounded-xl cursor-zoom-in"
+                    className="relative w-full h-[480px] flex items-center justify-center overflow-hidden rounded-xl md:cursor-zoom-in"
                     onClick={(e) => {
+                      if (window.matchMedia('(max-width: 767px)').matches) return;
                       e.stopPropagation();
                       setIsPreviewOpen(true);
                       setIsAutoSlidePaused(true);
@@ -2056,7 +2057,7 @@ export const ProductDetails = ({ productId }) => {
                     <LuxuryImage
                       src={activeImage || imagesList[0]}
                       alt={product.name}
-                      className="w-full h-auto object-contain transition-transform duration-300 ease-out md:group-hover:scale-105 origin-[var(--zoom-x,50%)_var(--zoom-y,50%)]"
+                      className="no-zoom w-full h-auto object-contain transition-transform duration-300 ease-out md:group-hover:scale-105 origin-[var(--zoom-x,50%)_var(--zoom-y,50%)]"
                       fetchpriority="high"
                       width="600"
                       height="600"
