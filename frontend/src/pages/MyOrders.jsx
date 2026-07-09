@@ -736,7 +736,7 @@ export const MyOrders = () => {
                                 </div>
                               )}
                             </div>
-                            <span className={`text-[10px] font-black uppercase px-2.5 py-1 rounded-full border ${badgeClass}`}>
+                            <span className={`text-[10px] font-black uppercase px-2.5 py-1 rounded-full border whitespace-nowrap ${badgeClass}`}>
                               {statusText}
                             </span>
                           </div>

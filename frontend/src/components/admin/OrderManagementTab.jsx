@@ -52,7 +52,7 @@ export const OrderManagementTab = ({
                   {o.shipping_address?.name} - {o.shipping_address?.address}, {o.shipping_address?.city}
                 </td>
                 <td className="py-3.5">
-                  <span className={`px-[12px] py-[4px] rounded-full text-[10px] font-semibold border shadow-sm ${
+                  <span className={`px-[12px] py-[4px] rounded-full text-[10px] font-semibold border shadow-sm whitespace-nowrap ${
                     (o.status || '').toLowerCase() === 'pending'
                       ? 'status-badge-pending'
                       : (o.status || '').toLowerCase() === 'processing' || (o.status || '').toLowerCase() === 'confirmed' || (o.status || '').toLowerCase() === 'packed'
@@ -503,7 +503,7 @@ export const OrderManagementTab = ({
                         <p className="text-[10px]">{req.created_time}</p>
                       </td>
                       <td className="py-3.5 pr-2">
-                        <span className={`px-[12px] py-[4px] rounded-full text-[10px] font-semibold border shadow-sm ${
+                        <span className={`px-[12px] py-[4px] rounded-full text-[10px] font-semibold border shadow-sm whitespace-nowrap ${
                           (req.status || '').toLowerCase() === 'pending'
                             ? 'bg-[#F59E0B] text-white border-[#D97706]'
                             : (req.status || '').toLowerCase() === 'approved' || (req.status || '').toLowerCase() === 'available'
