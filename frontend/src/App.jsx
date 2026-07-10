@@ -87,6 +87,7 @@ function App() {
         img.src.includes('logo.svg') ||
         img.src.includes('avatar') ||
         img.src.includes('flag') ||
+        img.src.includes('cat_') ||
         img.classList.contains('no-zoom') ||
         img.closest('.no-zoom') ||
         img.closest('.category-item-link') ||
@@ -117,11 +118,11 @@ function App() {
       <style dangerouslySetInnerHTML={{__html: `
         /* Magnifying glass hover hint on product/gallery graphics (desktop only) */
         @media (min-width: 768px) {
-          img:not(.no-zoom):not([src*="logo.svg"]):not([src*="avatar"]):not([src*="flag"]) {
+          img:not(.no-zoom):not([src*="logo.svg"]):not([src*="avatar"]):not([src*="flag"]):not([src*="cat_"]) {
             cursor: zoom-in;
             transition: filter 0.25s ease;
           }
-          img:not(.no-zoom):not([src*="logo.svg"]):not([src*="avatar"]):not([src*="flag"]):hover {
+          img:not(.no-zoom):not([src*="logo.svg"]):not([src*="avatar"]):not([src*="flag"]):not([src*="cat_"]):hover {
             filter: brightness(1.04);
           }
         }
@@ -132,6 +133,15 @@ function App() {
         .no-zoom img,
         .no-zoom {
           cursor: default !important;
+        }
+        /* Ensure links/pointer elements with no-zoom show pointer cursor */
+        a.no-zoom img,
+        a.no-zoom,
+        a .no-zoom img,
+        a .no-zoom,
+        .cursor-pointer img,
+        .cursor-pointer {
+          cursor: pointer !important;
         }
       `}} />
       <AnimatePresence>

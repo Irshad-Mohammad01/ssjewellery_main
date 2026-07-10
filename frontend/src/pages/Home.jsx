@@ -400,7 +400,7 @@ const BannerSlider = React.memo(({
                 <img
                   src={slide.image_url}
                   alt={slide.title}
-                  className="hero-image-glow"
+                  className="hero-image-glow no-zoom"
                   style={{
                     position: 'absolute', inset: 0,
                     width: '100%', height: '100%',
@@ -713,7 +713,7 @@ const BannerSlider = React.memo(({
                         src={slide.image_url}
                         alt={slide.title}
                         draggable="false"
-                        className="h-full w-auto object-contain rounded-xl filter drop-shadow-[0_8px_16px_rgba(0,0,0,0.4)] select-none"
+                        className="h-full w-auto object-contain rounded-xl filter drop-shadow-[0_8px_16px_rgba(0,0,0,0.4)] select-none no-zoom"
                         width="300"
                         height="200"
                       />
@@ -797,7 +797,7 @@ const CategoryGrid = React.memo(({ activeCategory, loading, onCategoryClick }) =
                       e.preventDefault();
                       onCategoryClick(cat.name);
                     }}
-                    className="category-item-link flex flex-col items-center justify-center focus:outline-none cursor-pointer select-none w-20 sm:w-24 group"
+                    className="category-item-link flex flex-col items-center justify-center focus:outline-none cursor-pointer select-none w-20 sm:w-24 group no-zoom"
                   >
                     <div
                       className={`rounded-full flex items-center justify-center overflow-hidden border-2 p-0.5 transition-all duration-500 ${
@@ -869,7 +869,7 @@ const CategoryGrid = React.memo(({ activeCategory, loading, onCategoryClick }) =
                       e.preventDefault();
                       onCategoryClick(cat.name);
                     }}
-                    className="category-item-link snap-center flex-none flex flex-col items-center justify-center focus:outline-none cursor-pointer select-none w-[76px] sm:w-[84px] group"
+                    className="category-item-link snap-center flex-none flex flex-col items-center justify-center focus:outline-none cursor-pointer select-none w-[76px] sm:w-[84px] group no-zoom"
                   >
                     <div
                       className={`rounded-full flex items-center justify-center overflow-hidden border-2 p-0.5 transition-all duration-500 ${
