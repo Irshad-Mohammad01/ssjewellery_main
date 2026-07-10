@@ -423,24 +423,16 @@ export const OrderManagementTab = ({
                 Would you like to send an automated confirmation email to the customer with these expected availability and delivery dates?
               </p>
               
-              <div className="flex flex-col gap-2">
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => setShowConfirmModal(false)}
-                    className="flex-1 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-750 text-slate-750 dark:text-slate-300 font-bold rounded-xl text-xs cursor-pointer border-none transition-colors"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    onClick={() => handleProceedBuyRequest(editingBuyRequest.id, 'Yes')}
-                    className="flex-1 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-750 text-slate-750 dark:text-slate-300 font-bold rounded-xl text-xs cursor-pointer border border-slate-250 dark:border-slate-700 transition-colors"
-                  >
-                    Yes
-                  </button>
-                </div>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setShowConfirmModal(false)}
+                  className="flex-1 py-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-750 text-slate-750 dark:text-slate-300 font-bold rounded-xl text-xs cursor-pointer border-none transition-colors"
+                >
+                  Cancel
+                </button>
                 <button
                   onClick={() => handleProceedBuyRequest(editingBuyRequest.id, 'Send')}
-                  className="w-full py-2.5 bg-[#5B1E7A] hover:bg-[#D4A75F] text-white font-bold rounded-xl text-xs cursor-pointer border-none shadow-md shadow-[#5B1E7A]/10 transition-all"
+                  className="flex-1 py-2.5 bg-[#5B1E7A] hover:bg-[#D4A75F] text-white font-bold rounded-xl text-xs cursor-pointer border-none shadow-md shadow-[#5B1E7A]/10 transition-all"
                 >
                   Send
                 </button>
